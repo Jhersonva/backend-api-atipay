@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Promotions\PromotionController;
 use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
@@ -26,4 +27,12 @@ Route::middleware(IsUserAuth::class)->group(function () {
     });
 });
 
-//Routes
+//Routes Publicas:
+
+//Route Api Customers
+Route::get('promotions', [PromotionController::class, 'index']);
+Route::post('promotions', [PromotionController::class, 'store']);
+Route::get('promotions/{id}', [PromotionController::class, 'show']);
+Route::put('promotions/{id}', [PromotionController::class, 'update']);
+Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
+
