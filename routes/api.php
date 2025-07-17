@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Promotions\PromotionController;
+use App\Http\Controllers\Api\PointsHistory\PointsHistoryController;
 use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
@@ -36,3 +37,10 @@ Route::get('promotions/{id}', [PromotionController::class, 'show']);
 Route::put('promotions/{id}', [PromotionController::class, 'update']);
 Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 
+
+//Route Points History
+Route::get('points-history', [PointsHistoryController::class, 'index']);
+Route::post('points-history', [PointsHistoryController::class, 'create']);
+Route::get('points-history/{id}', [PointsHistoryController::class, 'show']);
+Route::put('points-history/{id}', [PointsHistoryController::class, 'update']);
+Route::delete('points-history/{id}', [PointsHistoryController::class, 'destroy']);
