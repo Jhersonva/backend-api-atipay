@@ -3,55 +3,40 @@
 namespace App\Services;
 
 use App\Models\Product_Categories;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductCategoriesService
 {
-    /**
-     * Obtener todas las categorías de productos.
-     */
-    public function getAll()
+    public function getAll(): Collection
     {
         return Product_Categories::all();
     }
 
-    /**
-     * Buscar una categoría por ID.
-     */
-    public function findById($id)
+    public function getById(int $id): ?Product_Categories
     {
-        return Product_Categories::findOrFail($id);
+        return Product_Categories::find($id);
     }
 
-    /**
-     * Crear una nueva categoría.
-     */
-    public function store(array $data)
+    public function create(array $data): Product_Categories
     {
-        return Product_Categories::create([
-            'name' => $data['name'],
-        ]);
+        return Product_Categories::create($data);
     }
 
-    /**
-     * Actualizar una categoría existente.
-     */
-    public function update($id, array $data)
+    public function update(int $id, array $data): ?Product_Categories
     {
-        $category = Product_Categories::findOrFail($id);
-
-        $category->update([
-            'name' => $data['name'] ?? $category->name,
-        ]);
-
+        $category = Product_Categories::find($id);
+        if ($category) {
+            $category->update($data);
+        }
         return $category;
     }
 
-    /**
-     * Eliminar una categoría.
-     */
-    public function delete($id): bool
+    public function delete(int $id): bool
     {
-        $category = Product_Categories::findOrFail($id);
-        return $category->delete();
+        $category = Product_Categories::find($id);
+        if ($category) {
+            return $category->delete();
+        }
+        return false;
     }
 }
