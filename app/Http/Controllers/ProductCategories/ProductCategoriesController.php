@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Api\ProductCategories;
+namespace App\Http\Controllers\ProductCategories;
+
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductCategories\StoreProductCategoryRequest;
@@ -29,9 +30,14 @@ class ProductCategoriesController extends Controller
     /**
      * Obtener una categoría por ID.
      */
-    public function show($id): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $category = $this->productCategoriesService->findById($id);
+        $category = $this->productCategoriesService->getById($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Categoría no encontrada.'], 404);
+        }
+
         return response()->json($category);
     }
 
@@ -41,7 +47,7 @@ class ProductCategoriesController extends Controller
     public function store(StoreProductCategoryRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $category = $this->productCategoriesService->store($data);
+        $category = $this->productCategoriesService->create($data);
 
         return response()->json($category, 201);
     }
@@ -49,10 +55,14 @@ class ProductCategoriesController extends Controller
     /**
      * Actualizar una categoría existente.
      */
-    public function update(UpdateProductCategoryRequest $request, $id): JsonResponse
+    public function update(UpdateProductCategoryRequest $request, int $id): JsonResponse
     {
         $data = $request->validated();
         $category = $this->productCategoriesService->update($id, $data);
+
+        if (!$category) {
+            return response()->json(['message' => 'Categoría no encontrada.'], 404);
+        }
 
         return response()->json($category);
     }
@@ -60,14 +70,14 @@ class ProductCategoriesController extends Controller
     /**
      * Eliminar una categoría.
      */
-    public function destroy($id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        $success = $this->productCategoriesService->delete($id);
+        $deleted = $this->productCategoriesService->delete($id);
 
-        if ($success) {
-            return response()->json(['message' => 'Categoría eliminada exitosamente.']);
+        if (!$deleted) {
+            return response()->json(['message' => 'Categoría no encontrada.'], 404);
         }
 
-        return response()->json(['message' => 'Categoría no encontrada.'], 404);
+        return response()->json(['message' => 'Categoría eliminada exitosamente.']);
     }
 }
