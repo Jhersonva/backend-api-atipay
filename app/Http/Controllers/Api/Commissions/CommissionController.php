@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api\Commissions;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Commissions\CommissionRequest;
-use App\Http\Requests\Commissions\UpadateCommissionRequest;
+use App\Http\Requests\Commissions\UpdateCommissionRequest;
 use App\Services\CommissionService;
 use Illuminate\Http\JsonResponse;
 
-class PromotionController extends Controller
+class CommissionController extends Controller
 {
     protected $commissionService;
 
@@ -19,11 +19,11 @@ class PromotionController extends Controller
 
     public function index(): JsonResponse
     {
-        $commission = $this->promotionService->getAll();
+        $commission = $this->commissionService->getAll();
         return response()->json($commission);
     }
 
-    public function store(StorePromotionRequest $request): JsonResponse
+    public function create(CommissionRequest $request): JsonResponse
     {
         $commission = $this->commissionService->create($request->validated());
         return response()->json($commission, 201);
@@ -38,7 +38,7 @@ class PromotionController extends Controller
         return response()->json($commission);
     }
 
-    public function update(UpdatePromotionRequest $request, $id): JsonResponse
+    public function update(UpdateCommissionRequest $request, $id): JsonResponse
     {
         $commission = $this->commissionService->update($id, $request->validated());
         if (!$commission) {

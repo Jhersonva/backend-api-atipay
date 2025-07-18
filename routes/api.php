@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Promotions\PromotionController;
 use App\Http\Controllers\Api\PointsHistory\PointsHistoryController;
+use App\Http\Controllers\Api\Commissions\CommissionController;
 use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
@@ -44,3 +45,11 @@ Route::post('points-history', [PointsHistoryController::class, 'create']);
 Route::get('points-history/{id}', [PointsHistoryController::class, 'show']);
 Route::put('points-history/{id}', [PointsHistoryController::class, 'update']);
 Route::delete('points-history/{id}', [PointsHistoryController::class, 'destroy']);
+
+
+//Route Points History
+Route::get('commissions', [CommissionController::class, 'index']);
+Route::post('commissions', [CommissionController::class, 'create']);
+Route::get('commissions/{id}', [CommissionController::class, 'show']);
+Route::put('commissions/{id}', [CommissionController::class, 'update']);
+Route::delete('commissions/{id}', [CommissionController::class, 'destroy']);

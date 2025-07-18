@@ -4,7 +4,7 @@ namespace App\Http\Requests\Commissions;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpadateCommissionRequest extends FormRequest
+class UpdateCommissionRequest extends FormRequest
 {
     public function authorize(): bool
     {

@@ -9,9 +9,12 @@ class Commissions extends Model
 {
     use HasFactory;
 
+    protected $table = 'commissions';
+
+
     protected $fillable = [
         'user_id',
-        'referred_us',
+        'referred_user',
         'level',
         'points_earned',
         'total_amount',
