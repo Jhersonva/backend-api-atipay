@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\AtipayTransfer;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -53,4 +54,21 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(User::class, 'referred_by');
     }
+
+    /**
+     * Transferencias enviadas por el usuario
+     */
+    public function sentTransfers()
+    {
+        return $this->hasMany(AtipayTransfer::class, 'sender_id');
+    }
+
+    /**
+     * Transferencias recibidas por el usuario
+     */
+    public function receivedTransfers()
+    {
+        return $this->hasMany(AtipayTransfer::class, 'receiver_id');
+    }
+
 }
