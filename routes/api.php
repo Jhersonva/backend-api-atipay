@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Promotions\PromotionController;
 use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Controllers\Api\AtipayTransfers\AtipayTransferController;
+use App\Http\Controllers\Api\Withdrawals\WithdrawalController;
+
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
 use App\Http\Middleware\NoUserExists;
@@ -33,13 +35,22 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::get('promotions', [PromotionController::class, 'index']);
     Route::get('promotions/{id}', [PromotionController::class, 'show']);
 
+    //Route Api Withdrawal
+    Route::post('withdrawals', [WithdrawalController::class, 'store']);
+    Route::get('withdrawals/my', [WithdrawalController::class, 'myWithdrawals']);
+
     // Rutas de la API AuthUser -  Authenticated - Admin
     Route::middleware(IsAdmin::class)->group(function () {
 
-        //Route Api Promotions - Acciones
+        //Route Api Promotions - Acciones Admin
         Route::post('promotions', [PromotionController::class, 'store']);
         Route::put('promotions/{id}', [PromotionController::class, 'update']);
         Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
+
+        //Route Api Promotions - Acciones Admin
+        Route::get('withdrawals', [WithdrawalController::class, 'index']);
+        Route::get('withdrawals/{id}', [WithdrawalController::class, 'show']);
+        Route::put('withdrawals/{id}/status', [WithdrawalController::class, 'updateStatus']);
     });
 });
 
