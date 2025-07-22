@@ -14,16 +14,9 @@ return new class extends Migration
             // Relación con usuarios
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-
-            // Monto de la transferencia
             $table->integer('amount');
-
-            // Tipo de atipay usado (tienda o inversión)
             $table->enum('type', ['investment', 'store']);
-
-            // Confirmación del receptor
             $table->boolean('confirmed')->default(false);
-
             $table->timestamps();
         });
     }

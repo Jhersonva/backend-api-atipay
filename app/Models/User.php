@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\AtipayTransfer;
+use App\Models\Withdrawal;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -18,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
     public const ROLE_PARTNER = 'partner';
 
     protected $fillable = [
-        'username', 'email', 'password', 'role', 'status', 'accumulated_points', 'reference_code', 'referred_by',
+        'username', 'email', 'password', 'role', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
     ];
 
     protected $hidden = [
@@ -71,4 +72,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(AtipayTransfer::class, 'receiver_id');
     }
 
+    /**
+     * Relacion con la cuenta del usuario
+     */
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
 }
