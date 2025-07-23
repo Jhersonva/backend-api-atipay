@@ -24,8 +24,6 @@ class AtipayTransferService
                 throw new \Exception("No puedes transferirte a ti mismo.");
             }
 
-            // Verificar que el usuario tenga suficiente saldo de ese tipo / logica
-
             return AtipayTransfer::create([
                 'sender_id' => $data['sender_id'],
                 'receiver_id' => $data['receiver_id'],

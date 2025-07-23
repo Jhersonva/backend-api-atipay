@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Withdrawals;
+namespace App\Http\Requests\AtipayRecharges;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreWithdrawalRequest extends FormRequest
+class StoreAtipayRechargeRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,13 +16,8 @@ class StoreWithdrawalRequest extends FormRequest
         return [
             'amount' => 'required|numeric|min:1',
             'method' => 'required|in:yape,plin',
+            'type_usage' => 'required|in:investment,store',
+            'proof_image' => 'required|image|max:2048', // o 'file' si se sube un archivo
         ];
-    }
-
-    public function prepareForValidation()
-    {
-        $this->merge([
-            'user_id' => auth('api')->id(),
-        ]);
     }
 }

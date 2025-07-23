@@ -22,17 +22,13 @@ class AtipayTransfer extends Model
         'updated_at'
     ];
 
-    /**
-     * El usuario que envió los Atipay
-     */
+    //El usuario que envió los Atipay
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
-    /**
-     * El usuario que recibió los Atipay
-     */
+    //El usuario que recibió los Atipay
     public function receiver()
     {
         return $this->belongsTo(User::class, 'receiver_id');
