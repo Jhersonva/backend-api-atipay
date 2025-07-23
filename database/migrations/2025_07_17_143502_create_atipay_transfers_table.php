@@ -10,8 +10,6 @@ return new class extends Migration
     {
         Schema::create('atipay_transfers', function (Blueprint $table) {
             $table->id();
-
-            // Relación con usuarios
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->integer('amount');

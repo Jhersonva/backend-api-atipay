@@ -56,27 +56,29 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(User::class, 'referred_by');
     }
 
-    /**
-     * Transferencias enviadas por el usuario
-     */
+    
+    // Transferencias enviadas por el usuario
     public function sentTransfers()
     {
         return $this->hasMany(AtipayTransfer::class, 'sender_id');
     }
 
-    /**
-     * Transferencias recibidas por el usuario
-     */
+    // Transferencias recibidas por el usuario
     public function receivedTransfers()
     {
         return $this->hasMany(AtipayTransfer::class, 'receiver_id');
     }
 
-    /**
-     * Relacion con la cuenta del usuario
-     */
+    // Relacion con la cuenta del usuario
+     
     public function withdrawals()
     {
         return $this->hasMany(Withdrawal::class);
+    }
+
+    // Recargas solicitadas por el usuario
+    public function atipayRecharges()
+    {
+        return $this->hasMany(AtipayRecharge::class);
     }
 }
