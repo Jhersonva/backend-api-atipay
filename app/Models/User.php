@@ -22,11 +22,19 @@ class User extends Authenticatable implements JWTSubject
         'username', 'email', 'password', 'role', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
     ];
 
+    protected $appends = ['referral_url'];
+
     protected $hidden = [
         'password',
         'created_at',
         'updated_at'
     ];
+
+    // Devuelve la URL construida
+    public function getReferralUrlAttribute()
+    {
+        return url("/atipay/{$this->username}/reference-code-register/{$this->reference_code}");
+    }
 
     // Mutador para encriptar la contraseña
     public function setPasswordAttribute($value)
