@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\AtipayTransfer;
+use App\Models\Withdrawal;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -17,14 +19,22 @@ class User extends Authenticatable implements JWTSubject
     public const ROLE_PARTNER = 'partner';
 
     protected $fillable = [
-        'username', 'email', 'password', 'role', 'status', 'accumulated_points', 'reference_code', 'referred_by',
+        'username', 'email', 'password', 'role', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
     ];
+
+    protected $appends = ['referral_url'];
 
     protected $hidden = [
         'password',
         'created_at',
         'updated_at'
     ];
+
+    // Devuelve la URL construida
+    public function getReferralUrlAttribute()
+    {
+        return url("/atipay/{$this->username}/reference-code-register/{$this->reference_code}");
+    }
 
     // Mutador para encriptar la contraseña
     public function setPasswordAttribute($value)
@@ -52,5 +62,31 @@ class User extends Authenticatable implements JWTSubject
     public function referrals()
     {
         return $this->hasMany(User::class, 'referred_by');
+    }
+
+    
+    // Transferencias enviadas por el usuario
+    public function sentTransfers()
+    {
+        return $this->hasMany(AtipayTransfer::class, 'sender_id');
+    }
+
+    // Transferencias recibidas por el usuario
+    public function receivedTransfers()
+    {
+        return $this->hasMany(AtipayTransfer::class, 'receiver_id');
+    }
+
+    // Relacion con la cuenta del usuario
+     
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
+
+    // Recargas solicitadas por el usuario
+    public function atipayRecharges()
+    {
+        return $this->hasMany(AtipayRecharge::class);
     }
 }

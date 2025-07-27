@@ -14,8 +14,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->enum('role', ['admin', 'partner'])->default('partner');
             $table->string('password');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('status', allowed: ['active', 'inactive'])->default('active');
+            $table->decimal('atipay_investment_balance', 10, 2)->default(0); 
+            $table->decimal('atipay_store_balance', 10, 2)->default(0);    
             $table->integer('accumulated_points')->default(0);
+            $table->decimal('withdrawable_balance', 10, 2)->default(0);
             $table->string('reference_code')->unique();
             $table->foreignId('referred_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
