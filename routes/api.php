@@ -44,6 +44,13 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::post('atipay-recharges', [AtipayRechargeController::class, 'store']);
     Route::get('atipay-recharges/my', [AtipayRechargeController::class, 'myRecharges']);
 
+    //Route Points History
+    Route::get('points-history', [PointsHistoryController::class, 'index']);
+    Route::post('points-history', [PointsHistoryController::class, 'create']);
+    Route::get('points-history/{id}', [PointsHistoryController::class, 'show']);
+    Route::put('points-history/{id}', [PointsHistoryController::class, 'update']);
+    Route::delete('points-history/{id}', [PointsHistoryController::class, 'destroy']);
+
     // Admin-only routes
     Route::middleware(IsAdmin::class)->group(function () {
 
@@ -64,12 +71,3 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('atipay-recharges/{id}/reject', [AtipayRechargeController::class, 'reject']);
     });
 });
-
-
-
-//Route Points History
-Route::get('points-history', [PointsHistoryController::class, 'index']);
-Route::post('points-history', [PointsHistoryController::class, 'create']);
-Route::get('points-history/{id}', [PointsHistoryController::class, 'show']);
-Route::put('points-history/{id}', [PointsHistoryController::class, 'update']);
-Route::delete('points-history/{id}', [PointsHistoryController::class, 'destroy']);
