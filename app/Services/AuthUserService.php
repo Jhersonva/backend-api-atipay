@@ -12,12 +12,15 @@ class AuthUserService
 { 
     public function registerAdmin(array $data)
     {
-        // Verifica si ya hay 3 admins / no va
         $referredBy = null;
 
         if (!empty($data['reference_code'])) {
             $referrer = User::where('reference_code', $data['reference_code'])->first();
             if ($referrer) {
+                $referrer->accumulated_points += 10;
+                $referrer->withdrawable_balance += 0.50;
+                $referrer->save();
+
                 $referredBy = $referrer->id;
             }
         }
