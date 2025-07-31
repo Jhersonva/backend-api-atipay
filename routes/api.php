@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Controllers\Api\AtipayTransfers\AtipayTransferController;
 use App\Http\Controllers\Api\Withdrawals\WithdrawalController;
 use App\Http\Controllers\Api\AtipayRecharges\AtipayRechargeController;
+use App\Http\Controllers\Api\Products\ProductController;
 
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
@@ -43,6 +44,11 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::post('atipay-recharges', [AtipayRechargeController::class, 'store']);
     Route::get('atipay-recharges/my', [AtipayRechargeController::class, 'myRecharges']);
 
+    // Products (socios)
+    Route::get('products', [ProductController::class, 'index']);
+    Route::get('products/{id}', [ProductController::class, 'show']);
+
+
     // Admin-only routes
     Route::middleware(IsAdmin::class)->group(function () {
 
@@ -61,6 +67,11 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::get('atipay-recharges/{id}', [AtipayRechargeController::class, 'show']);
         Route::post('atipay-recharges/{id}/approve', [AtipayRechargeController::class, 'approve']);
         Route::post('atipay-recharges/{id}/reject', [AtipayRechargeController::class, 'reject']);
+    
+        // Products (admin)
+        Route::post('products', [ProductController::class, 'store']);
+        Route::put('products/{id}', [ProductController::class, 'update']);
+        Route::delete('products/{id}', [ProductController::class, 'destroy']);
     });
 });
 

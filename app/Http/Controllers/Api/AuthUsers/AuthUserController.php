@@ -25,7 +25,7 @@ class AuthUserController extends Controller
             // Llamamos al servicio para registrar un nuevo admin
             $this->authService->registerAdmin($request->all());
 
-            return response()->json(['message' => 'Usuario admin creado con éxito'], 201);
+            return response()->json(['message' => 'Usuario creado con éxito'], 201);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         }

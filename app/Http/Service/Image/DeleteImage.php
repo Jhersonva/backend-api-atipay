@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 trait DeleteImage
 {
-    public function delete(string $path): bool
+    public function deleteImage(string $path): bool
     {
         return Storage::disk('public')->delete($path);
     }
