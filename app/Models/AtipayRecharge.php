@@ -9,6 +9,8 @@ class AtipayRecharge extends Model
 {
     use HasFactory;
 
+    protected $appends = ['proof_image_url'];
+
     protected $fillable = [
         'user_id',
         'amount',
@@ -22,7 +24,8 @@ class AtipayRecharge extends Model
 
     protected $hidden = [
         'created_at',
-        'updated_at'
+        'updated_at',
+        'proof_image_path'
     ];
 
     // Usuario que solicita la recarga
@@ -35,5 +38,12 @@ class AtipayRecharge extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function getProofImageUrlAttribute()
+    {
+        return $this->proof_image_path
+            ? asset('storage/' . $this->proof_image_path)
+            : null;
     }
 }
