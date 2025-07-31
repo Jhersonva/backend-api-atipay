@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'default_admin_username' => env('DEFAULT_ADMIN_USERNAME', 'admin'),
+    'default_admin_email' => env('DEFAULT_ADMIN_EMAIL', 'admin@atipay.com'),
+    'default_admin_password' => env('DEFAULT_ADMIN_PASSWORD', 'Admin123#'),
+
 ];
