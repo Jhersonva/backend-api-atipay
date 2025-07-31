@@ -21,7 +21,7 @@ class AtipayRechargeService
         if (request()->hasFile('proof_image') && request()->file('proof_image') instanceof UploadedFile) {
             // Guardar imagen y generar URL accesible
             $path = $this->upload(request()->file('proof_image'), 'atipay_recharges');
-            $data['proof_image_path'] = asset('storage/' . $path); // http://localhost:8000/storage/...
+            $data['proof_image_path'] = $path;
         }
 
         return AtipayRecharge::create($data);
