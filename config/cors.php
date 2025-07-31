@@ -3,7 +3,7 @@
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:8000', 'http://localhost:5173'], // React (Vite)
+    'allowed_origins' => ['http://localhost:8000', 'https://atipay.cjtech.me'], // React (Vite)
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
