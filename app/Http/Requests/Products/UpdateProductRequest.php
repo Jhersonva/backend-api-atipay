@@ -20,7 +20,7 @@ class UpdateProductRequest extends FormRequest
             'points' => 'sometimes|integer|min:0',
             'unit_type' => 'nullable|string|in:unit,package,kilo,talla,education',
             'stock' => 'sometimes|integer|min:0',
-            'is_active' => 'sometimes|boolean',
+            'status' => 'sometimes|in:active,inactive',
             'image' => 'nullable|image|max:2048',
             'type' => 'sometimes|in:product,course',
         ];

@@ -89,4 +89,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(AtipayRecharge::class);
     }
+
+    public function referralCommissions()
+    {
+        return $this->hasMany(ReferralCommission::class);
+    }
+
+    public function receivedReferralCommissions()
+    {
+        return $this->hasMany(ReferralCommission::class, 'referred_user_id');
+    }
+
+    public function monthlyPoints()
+    {
+        return $this->hasMany(MonthlyUserPoint::class);
+    }
 }

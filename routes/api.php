@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AtipayTransfers\AtipayTransferController;
 use App\Http\Controllers\Api\Withdrawals\WithdrawalController;
 use App\Http\Controllers\Api\AtipayRecharges\AtipayRechargeController;
 use App\Http\Controllers\Api\Products\ProductController;
+use App\Http\Controllers\Api\Commissions\CommissionSettingController;
 
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
@@ -47,6 +48,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
     // Products (socios)
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/{id}', [ProductController::class, 'show']);
+    Route::post('products/purchase', [ProductController::class, 'purchase']);
 
 
     // Admin-only routes
@@ -72,7 +74,10 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('products', [ProductController::class, 'store']);
         Route::put('products/{id}', [ProductController::class, 'update']);
         Route::delete('products/{id}', [ProductController::class, 'destroy']);
+
+        // Commissions Settings (admin)
+        Route::get('commissions/settings', [CommissionSettingController::class, 'index']);
+        Route::post('commissions/settings', [CommissionSettingController::class, 'updateOrCreate']);
+        Route::delete('commissions/settings/{level}', [CommissionSettingController::class, 'destroy']);
     });
 });
-
-

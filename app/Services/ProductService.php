@@ -9,17 +9,26 @@ use App\Models\Course;
 use Illuminate\Http\Request;
 use App\Http\Service\Image\SaveImage;
 use App\Http\Service\Image\DeleteImage;
+use App\Services\ReferralCommissionService;
+use App\Models\User;
 
 class ProductService
 {
     use SaveImage, DeleteImage;
+
+    protected ReferralCommissionService $referralService;
+
+    public function __construct(ReferralCommissionService $referralService)
+    {
+        $this->referralService = $referralService;
+    }
 
     /**
      * Obtener todos los productos activos
      */
     public function getAll()
     {
-        return Product::with('course')->where('is_active', true)->latest()->get();
+        return Product::with('course')->where('status', 'active')->latest()->get();
     }
 
     /**
@@ -96,6 +105,38 @@ class ProductService
             }
 
             return $product->load('course');
+        });
+    }
+
+    /**
+     * Procesar compra de producto por un usuario
+     */
+    public function purchaseProduct(User $user, Product $product, int $quantity = 1): bool
+    {
+        return DB::transaction(function () use ($user, $product, $quantity) {
+            if ($product->stock < $quantity) {
+                throw new \Exception('Stock insuficiente.');
+            }
+
+            $totalPrice = $product->price * $quantity;
+            $totalPoints = $product->points * $quantity;
+
+            // Verifica si el usuario tiene saldo suficiente
+            if ($user->atipay_store_balance < $totalPrice) {
+                throw new \Exception('Saldo insuficiente.');
+            }
+
+            // Descuenta el saldo y stock
+            $user->atipay_store_balance -= $totalPrice;
+            $user->save();
+
+            $product->stock -= $quantity;
+            $product->save();
+
+            // Procesar comisiones
+            $this->referralService->process($user, $totalPoints, 'purchase');
+
+            return true;
         });
     }
 

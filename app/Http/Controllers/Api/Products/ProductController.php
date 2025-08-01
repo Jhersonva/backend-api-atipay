@@ -8,6 +8,7 @@ use App\Http\Requests\Products\UpdateProductRequest;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Exception;
 
 class ProductController extends Controller
@@ -82,6 +83,19 @@ class ProductController extends Controller
         }
     }
 
+    public function purchase(Request $request, ProductService $productService)
+    {
+        $user = auth('api')->user();
+        $product = Product::findOrFail($request->input('product_id'));
+        $quantity = (int) $request->input('quantity', 1);
+
+        try {
+            $productService->purchaseProduct($user, $product, $quantity);
+            return response()->json(['message' => 'Compra realizada con éxito.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
 
     /**
      * Eliminar un producto y su curso si aplica
