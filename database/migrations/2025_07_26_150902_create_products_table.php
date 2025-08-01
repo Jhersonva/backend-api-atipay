@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('points');
             $table->enum('unit_type', ['unit', 'package', 'kilo', 'talla', 'education'])->nullable();
             $table->unsignedInteger('stock')->default(0);
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('image_path')->nullable();
             $table->enum('type', ['product', 'course']);
             $table->timestamps();

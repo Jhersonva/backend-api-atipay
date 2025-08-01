@@ -14,7 +14,7 @@ class Product extends Model
         'points',
         'unit_type',
         'stock',
-        'is_active',
+        'status',
         'image_path',
         'type'
     ];
