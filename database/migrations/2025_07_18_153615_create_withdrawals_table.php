@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('withdrawals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Clave foránea al usuario que solicita el retiro
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
             $table->decimal('amount', 10, 2);
             $table->enum('method', ['yape', 'plin']);
             $table->enum('status', ['earring', 'approved', 'rejected'])->default('earring');

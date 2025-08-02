@@ -83,18 +83,69 @@ class ProductController extends Controller
         }
     }
 
-    public function purchase(Request $request, ProductService $productService)
+    public function purchase(Request $request)
     {
         $user = auth('api')->user();
         $product = Product::findOrFail($request->input('product_id'));
         $quantity = (int) $request->input('quantity', 1);
+        $paymentMethod = $request->input('payment_method', 'atipay');
 
         try {
-            $productService->purchaseProduct($user, $product, $quantity);
-            return response()->json(['message' => 'Compra realizada con éxito.']);
+            $this->productService->requestPurchase($user, $product, $quantity, $paymentMethod);
+
+            return response()->json([
+                'message' => 'Tu solicitud de compra ha sido enviada y está pendiente de aprobación del administrador.',
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
+    }
+
+    public function requestPurchase(Request $request)
+    {
+        $user = auth('api')->user();
+        $product = Product::findOrFail($request->input('product_id'));
+        $quantity = (int) $request->input('quantity', 1);
+        $paymentMethod = $request->input('payment_method', 'atipay');
+
+        try {
+            $this->productService->requestPurchase($user, $product, $quantity, $paymentMethod);
+
+            return response()->json(['message' => 'Compra enviada. Pendiente de aprobación.']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function approvePurchase($id)
+    {
+        try {
+            $this->productService->approvePurchase($id);
+            return response()->json(['message' => 'Compra aprobada y procesada correctamente.']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function rejectPurchase(Request $request, $id)
+    {
+        try {
+            $this->productService->rejectPurchase($id, $request->input('admin_message'));
+            return response()->json(['message' => 'Compra rechazada correctamente.']);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function allPurchaseRequests()
+    {
+        return response()->json($this->productService->getAllPurchaseRequests());
+    }
+
+    public function myPurchaseRequests()
+    {
+        $user = auth('api')->user();
+        return response()->json($this->productService->getUserPurchaseRequests($user));
     }
 
     /**

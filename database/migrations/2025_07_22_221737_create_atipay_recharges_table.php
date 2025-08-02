@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('type_usage', ['investment', 'store']);
             $table->string('proof_image_path');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
-            $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null'); // Admin
+            $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null'); 
             $table->decimal('atipays_granted', 10, 2)->default(0);
             $table->timestamps();
         });

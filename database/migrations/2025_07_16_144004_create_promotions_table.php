@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('promotions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->decimal('percentaje', 5, 2); // Ejemplo: 15.25%
+            $table->decimal('percentaje', 5, 2); 
             $table->integer('duration_months');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
