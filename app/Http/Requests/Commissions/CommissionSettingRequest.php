@@ -8,7 +8,7 @@ class CommissionSettingRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Ya está protegido por middleware de admin
+        return true; 
     }
 
     public function rules(): array

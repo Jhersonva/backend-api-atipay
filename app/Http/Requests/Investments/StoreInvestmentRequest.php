@@ -21,30 +21,22 @@ class StoreInvestmentRequest extends FormRequest
         ];
     }
 
-public function withValidator($validator)
-{
-    $validator->after(function ($validator) {
-        Log::info('Ejecutando validación personalizada');
-        $user = auth('api')->user();
-        $amount = $this->input('amount');
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $user = auth('api')->user();
+            $amount = $this->input('amount');
 
-        if ($user->atipay_investment_balance < $amount) {
-            Log::warning('Saldo insuficiente detectado', [
-                'user_id' => optional($user)->id,
-                'amount' => $amount,
-                'balance' => optional($user)->atipay_investment_balance
-            ]);
-            $validator->errors()->add('amount', 'Saldo insuficiente para invertir esa cantidad.');
-        }
+            if ($user->atipay_investment_balance < $amount) {
+                $validator->errors()->add('amount', 'Saldo insuficiente para invertir esa cantidad.');
+            }
 
-        // ⚠️ Detener flujo si hay errores
-        if ($validator->errors()->any()) {
-            throw new ValidationException($validator, response()->json([
-                'message' => 'Error de validación.',
-                'errors' => $validator->errors()
-            ], 422));
-        }
-    });
-}
-
+            if ($validator->errors()->any()) {
+                throw new ValidationException($validator, response()->json([
+                    'message' => 'Error de validación.',
+                    'errors' => $validator->errors()
+                ], 422));
+            }
+        });
+    }
 }
