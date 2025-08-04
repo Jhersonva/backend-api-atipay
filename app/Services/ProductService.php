@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Http\Service\Image\SaveImage;
 use App\Http\Service\Image\DeleteImage;
 use App\Services\ReferralCommissionService;
+use App\Models\PurchaseRequest;
+use App\Models\MonthlyUserPoint;
 use App\Models\User;
 
 class ProductService
@@ -111,33 +113,103 @@ class ProductService
     /**
      * Procesar compra de producto por un usuario
      */
-    public function purchaseProduct(User $user, Product $product, int $quantity = 1): bool
+
+    public function purchaseProduct(User $user, Product $product, int $quantity = 1, string $paymentMethod = 'atipay'): bool
     {
-        return DB::transaction(function () use ($user, $product, $quantity) {
+        return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
             if ($product->stock < $quantity) {
                 throw new \Exception('Stock insuficiente.');
             }
 
             $totalPrice = $product->price * $quantity;
-            $totalPoints = $product->points * $quantity;
+            $totalPoints = $product->points_earned * $quantity;
 
-            // Verifica si el usuario tiene saldo suficiente
-            if ($user->atipay_store_balance < $totalPrice) {
-                throw new \Exception('Saldo insuficiente.');
+            if ($paymentMethod === 'atipay') {
+                if ($user->atipay_store_balance < $totalPrice) {
+                    throw new \Exception('Saldo Atipay insuficiente.');
+                }
+
+                $user->atipay_store_balance -= $totalPrice;
+                $user->accumulated_points += $totalPoints; 
+                $user->save();
+
+                $this->referralService->process($user, $totalPoints, 'purchase');
+            } elseif ($paymentMethod === 'points') {
+                if ($user->accumulated_points < $totalPrice) {
+                    throw new \Exception('Puntos insuficientes.');
+                }
+
+                $user->accumulated_points -= $totalPrice;
+                $user->save();
+
+            } else {
+                throw new \Exception('Método de pago inválido.');
             }
-
-            // Descuenta el saldo y stock
-            $user->atipay_store_balance -= $totalPrice;
-            $user->save();
 
             $product->stock -= $quantity;
             $product->save();
 
-            // Procesar comisiones
-            $this->referralService->process($user, $totalPoints, 'purchase');
+            return true;
+        });
+    }
+
+    public function requestPurchase(User $user, Product $product, int $quantity, string $paymentMethod): PurchaseRequest
+    {
+        return PurchaseRequest::create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'quantity' => $quantity,
+            'payment_method' => $paymentMethod,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function getAllPurchaseRequests()
+    {
+        return PurchaseRequest::with(['user', 'product'])->latest()->get();
+    }
+
+    public function getUserPurchaseRequests(User $user)
+    {
+        return PurchaseRequest::with('product')->where('user_id', $user->id)->latest()->get();
+    }
+
+    public function approvePurchase(int $requestId): bool
+    {
+        return DB::transaction(function () use ($requestId) {
+            $request = PurchaseRequest::findOrFail($requestId);
+
+            if ($request->status !== 'pending') {
+                throw new \Exception('La compra ya fue procesada.');
+            }
+
+            $this->purchaseProduct(
+                $request->user,
+                $request->product,
+                $request->quantity,
+                $request->payment_method
+            );
+
+            $request->update(['status' => 'approved']);
 
             return true;
         });
+    }
+
+    public function rejectPurchase(int $requestId, string $message = null): bool
+    {
+        $request = PurchaseRequest::findOrFail($requestId);
+
+        if ($request->status !== 'pending') {
+            throw new \Exception('La compra ya fue procesada.');
+        }
+
+        $request->update([
+            'status' => 'rejected',
+            'admin_message' => $message,
+        ]);
+
+        return true;
     }
 
     /**
