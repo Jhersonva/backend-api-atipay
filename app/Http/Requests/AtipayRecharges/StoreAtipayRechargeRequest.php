@@ -17,7 +17,7 @@ class StoreAtipayRechargeRequest extends FormRequest
             'amount' => 'required|numeric|min:1',
             'method' => 'required|in:yape,plin',
             'type_usage' => 'required|in:investment,store',
-            'proof_image' => 'required|image|max:2048', // o 'file' si se sube un archivo
+            'proof_image' => 'required|image|max:2048',
         ];
     }
 }

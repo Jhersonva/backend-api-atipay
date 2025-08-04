@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('commission_settings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedTinyInteger('level')->unique(); // 1 a 5
-            $table->decimal('percentage', 5, 2); // Ej: 10.00 representa 10%
+            $table->unsignedTinyInteger('level')->unique(); 
+            $table->decimal('percentage', 5, 2);
             $table->timestamps();
         });
     }

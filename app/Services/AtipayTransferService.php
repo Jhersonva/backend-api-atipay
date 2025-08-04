@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AtipayTransfer;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth as LaravelAuth;
 use Illuminate\Support\Facades\DB;
 
 class AtipayTransferService
@@ -15,11 +14,9 @@ class AtipayTransferService
     public function create(array $data): AtipayTransfer
     {
         return DB::transaction(function () use ($data) {
-            // Validar que el tipo sea igual entre sender y receiver
             $sender = User::findOrFail($data['sender_id']);
             $receiver = User::findOrFail($data['receiver_id']);
 
-            // Asegurarse que no se transfiera a sí mismo
             if ($data['sender_id'] === $data['receiver_id']) {
                 throw new \Exception("No puedes transferirte a ti mismo.");
             }
@@ -28,7 +25,7 @@ class AtipayTransferService
                 'sender_id' => $data['sender_id'],
                 'receiver_id' => $data['receiver_id'],
                 'amount' => $data['amount'],
-                'type' => $data['type'], // investment o store
+                'type' => $data['type'],
                 'confirmed' => false,
             ]);
         });
