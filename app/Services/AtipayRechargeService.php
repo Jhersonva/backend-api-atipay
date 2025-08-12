@@ -70,18 +70,10 @@ class AtipayRechargeService
                 'atipays_granted' => $recharge->amount,
             ]);
 
-            // Actualizar saldos del usuario según type_usage
+            // Actualizar saldo unificado y puntos
             $user = $recharge->user;
-
-            if ($recharge->type_usage === 'investment') {
-                $user->atipay_investment_balance += $recharge->amount;
-            } elseif ($recharge->type_usage === 'store') {
-                $user->atipay_store_balance += $recharge->amount;
-            }
-
-            // Sumamos a puntos acumulados
+            $user->atipay_money += $recharge->amount;
             $user->accumulated_points += $recharge->amount;
-
             $user->save();
 
             return $recharge;

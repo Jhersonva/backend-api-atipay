@@ -12,8 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->enum('method', ['yape', 'plin']);
-            $table->enum('type_usage', ['investment', 'store']);
+            $table->enum('method', ['yape', 'plin', 'transferencia_bancaria', 'transferencia_electronica']);
             $table->string('proof_image_path');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null'); 

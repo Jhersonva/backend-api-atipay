@@ -15,8 +15,7 @@ class StoreAtipayRechargeRequest extends FormRequest
     {
         return [
             'amount' => 'required|numeric|min:1',
-            'method' => 'required|in:yape,plin',
-            'type_usage' => 'required|in:investment,store',
+            'method' => 'required|in:yape,plin,transferencia_bancaria,transferencia_electronica',
             'proof_image' => 'required|image|max:2048',
         ];
     }

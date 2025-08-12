@@ -15,11 +15,15 @@ class AtipayRecharge extends Model
         'user_id',
         'amount',
         'method',
-        'type_usage',
         'proof_image_path',
         'status',
         'approved_by',
-        'atipays_granted',
+        'atipays_granted',     
+    ];
+
+    protected $casts = [
+        'amount' => 'float',
+        'atipays_granted' => 'float',
     ];
 
     protected $hidden = [
