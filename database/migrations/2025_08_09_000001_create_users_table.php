@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('username')->unique();
             $table->string('email')->unique();
-            $table->enum('role', ['admin', 'partner'])->default('partner');
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->string('password');
             $table->enum('status', allowed: ['active', 'inactive'])->default('active');
             $table->decimal('atipay_investment_balance', 10, 2)->default(0); 

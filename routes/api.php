@@ -16,10 +16,9 @@ use App\Http\Controllers\Api\Investments\InvestmentWithdrawalController;
 
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsUserAuth;
-use App\Http\Middleware\NoUserExists;
 
 // Rutas públicas
-Route::post('register', [AuthUserController::class, 'registerUser'])->middleware(NoUserExists::class);
+Route::post('register', [AuthUserController::class, 'registerUser']);
 Route::post('login', [AuthUserController::class, 'loginUser']);
 
 Route::middleware(IsUserAuth::class)->group(function () {
