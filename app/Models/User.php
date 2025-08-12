@@ -19,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
     public const ROLE_PARTNER = 'partner';
 
     protected $fillable = [
-        'username', 'email', 'password', 'role', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
+        'username', 'email', 'role_id', 'password', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
     ];
 
     protected $appends = ['referral_url'];
@@ -29,6 +29,11 @@ class User extends Authenticatable implements JWTSubject
         'created_at',
         'updated_at'
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     // Devuelve la URL construida
     public function getReferralUrlAttribute()

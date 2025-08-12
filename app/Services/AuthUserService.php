@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Str;
@@ -13,6 +14,7 @@ class AuthUserService
     public function registerAdmin(array $data)
     {
         $referredBy = null;
+        $partnerRoleId = Role::where('name', User::ROLE_PARTNER)->value('id');
 
         if (!empty($data['reference_code'])) {
             $referrer = User::where('reference_code', $data['reference_code'])->first();
@@ -29,20 +31,28 @@ class AuthUserService
             'username' => $data['username'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'role_id' => $partnerRoleId,
             'reference_code' => Str::random(8),
             'referred_by' => $referredBy,
         ]);
     }
 
-     public function login(array $credentials)
+    public function login(array $credentials)
     {
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
-                throw new \Exception('Credenciales inválidas.'); 
+                throw new \Exception('Credenciales inválidas.');
             }
-            return $token;
+
+            $user = JWTAuth::user()->load('role');
+
+            return [
+                'token' => $token,
+                'user' => $user
+            ];
+
         } catch (JWTException $e) {
-            throw new \Exception('No se pudo crear el token: ' . $e->getMessage()); 
+            throw new \Exception('No se pudo crear el token: ' . $e->getMessage());
         }
     }
 

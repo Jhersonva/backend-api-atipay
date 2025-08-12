@@ -13,9 +13,10 @@ class IsAdmin
     {
         $user = auth('api')->user();
 
-        if ($user && $user->role === User::ROLE_ADMIN) {
+        if ($user && $user->role && $user->role->name === User::ROLE_ADMIN) {
             return $next($request);
-        } else{
+        }
+        else{
             return response()->json(['message' => 'No eres Admin'], 403);
         }
     }

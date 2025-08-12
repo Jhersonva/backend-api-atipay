@@ -34,13 +34,14 @@ class AuthUserController extends Controller
     public function loginUser(LoginAuthRequest $request)
     {
         try {
-            // Llamamos al servicio para realizar el login
-            $token = $this->authService->login($request->only(['username', 'password']));
+            $result = $this->authService->login($request->only(['username', 'password']));
 
             return response()->json([
-                'token' => $token,
-                'expires_in' => JWTAuth::factory()->getTTL()
+                'token' => $result['token'],
+                'expires_in' => JWTAuth::factory()->getTTL(),
+                'role' => $result['user']->role->name
             ], 200);
+
         } catch (\Exception $e) { 
             return response()->json(['error' => $e->getMessage()], 401); 
         }
