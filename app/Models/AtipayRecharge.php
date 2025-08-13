@@ -13,13 +13,22 @@ class AtipayRecharge extends Model
 
     protected $fillable = [
         'user_id',
+        'full_names',
         'amount',
         'method',
-        'type_usage',
         'proof_image_path',
         'status',
         'approved_by',
         'atipays_granted',
+        'request_date',
+        'request_time',
+        'processed_date',
+        'processed_time',     
+    ];
+
+    protected $casts = [
+        'amount' => 'float',
+        'atipays_granted' => 'float',
     ];
 
     protected $hidden = [

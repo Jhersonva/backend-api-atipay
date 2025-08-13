@@ -24,6 +24,9 @@ class AtipayRechargeService
             $data['proof_image_path'] = $path;
         }
 
+        $data['request_date'] = now('America/Lima')->toDateString();
+        $data['request_time'] = now('America/Lima')->format('h:i:s');
+
         return AtipayRecharge::create($data);
     }
 
@@ -68,20 +71,14 @@ class AtipayRechargeService
                 'status' => 'approved',
                 'approved_by' => $adminId,
                 'atipays_granted' => $recharge->amount,
+                'processed_date' => now('America/Lima')->toDateString(),
+                'processed_time' => now('America/Lima')->format('h:i:s'),
             ]);
 
-            // Actualizar saldos del usuario según type_usage
+            // Actualizar saldo unificado y puntos
             $user = $recharge->user;
-
-            if ($recharge->type_usage === 'investment') {
-                $user->atipay_investment_balance += $recharge->amount;
-            } elseif ($recharge->type_usage === 'store') {
-                $user->atipay_store_balance += $recharge->amount;
-            }
-
-            // Sumamos a puntos acumulados
+            $user->atipay_money += $recharge->amount;
             $user->accumulated_points += $recharge->amount;
-
             $user->save();
 
             return $recharge;
@@ -102,6 +99,8 @@ class AtipayRechargeService
         $recharge->update([
             'status' => 'rejected',
             'approved_by' => $adminId,
+            'processed_date' => now('America/Lima')->toDateString(),
+            'processed_time' => now('America/Lima')->format('h:i:s'),
         ]);
 
         return $recharge;

@@ -10,16 +10,28 @@ use App\Models\Withdrawal;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Carbon\Carbon;
 
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
-    public const ROLE_PARTNER = 'partner';
+    public const ROLE_PARTNER = 'partner';  
 
     protected $fillable = [
-        'username', 'email', 'role_id', 'password', 'status', 'atipay_investment_balance', 'atipay_store_balance', 'accumulated_points', 'withdrawable_balance', 'reference_code', 'referred_by',
+        'username',
+        'email',
+        'role_id',
+        'password',
+        'status',
+        'atipay_money',
+        'accumulated_points',
+        'withdrawable_balance',
+        'reference_code',
+        'referred_by',
+        'registration_date',
+        'registration_time',
     ];
 
     protected $appends = ['referral_url'];
@@ -29,6 +41,15 @@ class User extends Authenticatable implements JWTSubject
         'created_at',
         'updated_at'
     ];
+
+    protected $casts = [
+        'atipay_money' => 'float'
+    ];
+
+    public function getRegistrationTimeAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format('h:i:s A') : null;
+    }
 
     public function role()
     {
