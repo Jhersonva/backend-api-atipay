@@ -16,8 +16,6 @@ class StoreInvestmentRequest extends FormRequest
     {
         return [
             'promotion_id' => ['required', 'exists:promotions,id'],
-            'amount' => ['required', 'numeric', 'min:1'],
-            'receipt' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'], // 2MB máx
         ];
     }
 
