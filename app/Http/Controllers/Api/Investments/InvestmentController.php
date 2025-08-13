@@ -31,19 +31,14 @@ class InvestmentController extends Controller
     }
 
     /**
-     * Registrar nueva inversión (con comprobante)
+     * Registrar nueva inversión
      */
     public function store(StoreInvestmentRequest $request): JsonResponse
     {
         $user = auth('api')->user();
 
-        // Guardar archivo de comprobante
-        //$path = $request->file('receipt')->store('investment_receipts', 'public');
-
         $data = [
             'promotion_id' => $request->input('promotion_id'),
-            'amount' => $request->input('amount'),
-            'receipt' => $request->file('receipt'),
         ];
 
         $investment = $this->investmentService->store($user, $data);
@@ -88,21 +83,15 @@ class InvestmentController extends Controller
     }
 
     // Aprobar inversión
-    public function approve($id)
+    public function approve(Request $request, $id)
     {
         $investment = Investment::findOrFail($id);
+
         if ($investment->status !== 'pending') {
             return response()->json(['error' => 'Esta inversión ya fue validada.'], 400);
         }
 
-        $now = Carbon::now();
-
-        $investment->status = 'active';
-        $investment->start_date = $now;
-        $investment->approved_at = $now;
-        $investment->end_date = $now->copy()->addMonths($investment->promotion->duration_months);
-
-        $investment->save();
+        $this->investmentService->approve($investment, $request->admin_message);
 
         return response()->json(['message' => 'Inversión aprobada exitosamente.']);
     }

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Investment extends Model
 {
@@ -13,11 +15,11 @@ class Investment extends Model
         'user_id',
         'promotion_id',
         'amount',
-        'receipt_path',
         'status',
         'admin_message',
         'daily_earning',
         'approved_at',
+        'rejected_at',
         'start_date',
         'end_date',
     ];
@@ -28,12 +30,30 @@ class Investment extends Model
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'daily_earning' => 'decimal:2',
+        'daily_earning' => 'float',
         'approved_at' => 'datetime',
+        'rejected_at'   => 'datetime',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+
+    protected function approvedAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value
+                ? Carbon::parse($value)->format('Y-m-d H:i:s')
+                : null,
+        );
+    }
+
+    protected function rejectedAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value
+                ? Carbon::parse($value)->format('Y-m-d H:i:s')
+                : null,
+        );
+    }
 
     // Relaciones
     public function user()
