@@ -24,6 +24,9 @@ class AtipayRechargeService
             $data['proof_image_path'] = $path;
         }
 
+        $data['request_date'] = now('America/Lima')->toDateString();
+        $data['request_time'] = now('America/Lima')->format('h:i:s');
+
         return AtipayRecharge::create($data);
     }
 
@@ -68,6 +71,8 @@ class AtipayRechargeService
                 'status' => 'approved',
                 'approved_by' => $adminId,
                 'atipays_granted' => $recharge->amount,
+                'processed_date' => now('America/Lima')->toDateString(),
+                'processed_time' => now('America/Lima')->format('h:i:s'),
             ]);
 
             // Actualizar saldo unificado y puntos
@@ -94,6 +99,8 @@ class AtipayRechargeService
         $recharge->update([
             'status' => 'rejected',
             'approved_by' => $adminId,
+            'processed_date' => now('America/Lima')->toDateString(),
+            'processed_time' => now('America/Lima')->format('h:i:s'),
         ]);
 
         return $recharge;

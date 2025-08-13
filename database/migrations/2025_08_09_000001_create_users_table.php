@@ -20,6 +20,9 @@ return new class extends Migration
             $table->decimal('withdrawable_balance', 10, 2)->default(0);
             $table->string('reference_code')->unique();
             $table->foreignId('referred_by')->nullable()->constrained('users')->onDelete('set null');
+
+            $table->date('registration_date'); 
+            $table->string('registration_time'); 
             $table->timestamps();
         });
     }

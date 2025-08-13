@@ -34,6 +34,9 @@ class AuthUserService
             'role_id' => $partnerRoleId,
             'reference_code' => Str::random(8),
             'referred_by' => $referredBy,
+
+            'registration_date' => now('America/Lima')->toDateString(),
+            'registration_time' => now('America/Lima')->format('h:i:s A'),
         ]);
     }
 

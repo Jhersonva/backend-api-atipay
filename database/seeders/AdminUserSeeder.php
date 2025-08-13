@@ -26,7 +26,9 @@ class AdminUserSeeder extends Seeder
             'role_id' => $adminRole->id,
             'status' => 'active',
             'reference_code' => Str::random(10),
-            'referred_by' => null
+            'referred_by' => null,
+            'registration_date' => now('America/Lima')->toDateString(),
+            'registration_time' => now('America/Lima')->format('h:i:s A'),
         ]);
     }
 }
