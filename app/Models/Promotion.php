@@ -12,6 +12,7 @@ class Promotion extends Model
     protected $fillable = [
         'name',
         'percentaje',
+        'atipay_price_promotion',
         'duration_months',
         'status',
     ];
@@ -19,5 +20,9 @@ class Promotion extends Model
     protected $hidden = [
         'created_at',
         'updated_at'
+    ];
+
+    protected $casts = [
+        'atipay_price_promotion' => 'float',
     ];
 }
