@@ -19,6 +19,12 @@ class AuthUserController extends Controller
         $this->authService = $authService;
     }
 
+    public function index(): JsonResponse
+    {
+        $users = $this->authService->getUsersByRolePartnerOrAdmin();
+        return response()->json($users);
+    }
+
     public function registerUser(RegisterAuthRequest $request)
     {
         try {

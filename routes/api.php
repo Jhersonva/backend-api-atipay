@@ -37,7 +37,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::post('atipay-transfers/confirm/{id}', [AtipayTransferController::class, 'confirm']);
     Route::get('atipay-transfers/{id}', [AtipayTransferController::class, 'show']);
 
-    // Promotions (sólo lectura)
+    // Promotions (socios)
     Route::get('promotions', [PromotionController::class, 'index']);
     Route::get('promotions/{id}', [PromotionController::class, 'show']);
 
@@ -71,6 +71,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
     // Admin-only routes
     Route::middleware(IsAdmin::class)->group(function () {
+
+        // Listar Users (Partner y Admin)
+        Route::get('users', [AuthUserController::class, 'index']);
 
         // Promotions (admin)
         Route::post('promotions', [PromotionController::class, 'store']);
