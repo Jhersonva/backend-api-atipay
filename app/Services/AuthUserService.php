@@ -33,8 +33,7 @@ class AuthUserService
             'password' => $data['password'],
             'role_id' => $partnerRoleId,
             'reference_code' => Str::random(8),
-            'referred_by' => $referredBy,
-
+            'referred_by' => $referrer->id,
             'registration_date' => now('America/Lima')->toDateString(),
             'registration_time' => now('America/Lima')->format('h:i:s A'),
         ]);
@@ -57,6 +56,17 @@ class AuthUserService
         } catch (JWTException $e) {
             throw new \Exception('No se pudo crear el token: ' . $e->getMessage());
         }
+    }
+
+    public function getUsersByRolePartnerOrAdmin()
+    {
+        $partnerRoleId = Role::where('name', User::ROLE_PARTNER)->value('id');
+        $adminRoleId   = Role::where('name', User::ROLE_ADMIN)->value('id');
+
+        return User::whereIn('role_id', [$partnerRoleId, $adminRoleId])
+            ->with('role')
+            ->orderBy('username')
+            ->get();
     }
 
     public function refreshToken()

@@ -17,7 +17,7 @@ class RegisterAuthRequest extends FormRequest
             'username' => ['required', 'string', 'unique:users,username'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
-            'reference_code' => ['nullable', 'string', 'exists:users,reference_code'],
+            'reference_code' => ['required', 'string', 'exists:users,reference_code'],
         ];
     }
 
@@ -28,7 +28,8 @@ class RegisterAuthRequest extends FormRequest
             'password.regex' => 'La contraseña debe incluir una mayúscula, minúscula, número y carácter especial.',
             'username.unique' => 'El nombre de usuario ya está en uso.',
             'email.unique' => 'El correo electrónico ya está registrado.',
-
+            'reference_code.required' => 'Debe ingresar un código de referencia.',
+            'reference_code.exists' => 'El código de referencia no es válido.',
         ];
     }
 }
