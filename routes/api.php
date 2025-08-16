@@ -59,6 +59,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
     // Ver Red de afiliados propios (socios)
     Route::get('referrals/my-network-count', [ReferralController::class, 'myReferralLevelsCount']);
+    Route::get('referrals/my-network', [ReferralController::class, 'myReferralNetwork']);
 
     // Inversiones (socios)
     Route::get('investments', [InvestmentController::class, 'index']);
