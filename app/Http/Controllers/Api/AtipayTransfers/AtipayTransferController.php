@@ -49,22 +49,51 @@ class AtipayTransferController extends Controller
      */
     public function store(StoreAtipayTransferRequest $request): JsonResponse
     {
-        $validated = $request->validated();
-        $validated['sender_id'] = auth('api')->id();
+        try {
+            $validated = $request->validated();
+            $validated['sender_id'] = auth('api')->id();
 
-        $transfer = $this->transferService->create($validated);
+            $transfer = $this->transferService->create($validated);
 
-        return response()->json(['message' => 'Transferencia creada correctamente', 'data' => $transfer], 201);
+            return response()->json([
+                'message' => 'Transferencia creada correctamente',
+                'data'    => $transfer
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error'   => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
-     * Confirmar una transferencia recibida
+     * Aprobar una transferencia recibida
      */
-    public function confirm($id): JsonResponse
+    public function approve($id): JsonResponse
     {
         try {
-            $transfer = $this->transferService->confirm($id);
-            return response()->json(['message' => 'Transferencia confirmada', 'data' => $transfer]);
+            $transfer = $this->transferService->approve($id);
+            return response()->json([
+                'message' => 'Transferencia aprobada',
+                'data'    => $transfer
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        }
+    }
+
+    /**
+     * Rechazar una transferencia recibida
+     */
+    public function reject($id): JsonResponse
+    {
+        try {
+            $transfer = $this->transferService->reject($id);
+            return response()->json([
+                'message' => 'Transferencia rechazada',
+                'data'    => $transfer
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 403);
         }

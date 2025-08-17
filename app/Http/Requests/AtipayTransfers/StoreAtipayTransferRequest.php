@@ -15,8 +15,7 @@ class StoreAtipayTransferRequest extends FormRequest
     {
         return [
             'receiver_id' => 'required|exists:users,id|different:sender_id',
-            'amount' => 'required|integer|min:1',
-            'type' => 'required|in:investment,store',
+            'amount' => 'required|numeric|min:1',
         ];
     }
 
