@@ -31,10 +31,11 @@ Route::middleware(IsUserAuth::class)->group(function () {
     });
 
     // Atipay Transfers
-    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);
-    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']);
+    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  //Transferencias enviadas
+    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']); //Transferencias recibidas
     Route::post('atipay-transfers', [AtipayTransferController::class, 'store']);
-    Route::post('atipay-transfers/confirm/{id}', [AtipayTransferController::class, 'confirm']);
+    Route::post('atipay-transfers/{id}/approve', [AtipayTransferController::class, 'approve']);
+    Route::post('atipay-transfers/{id}/reject', [AtipayTransferController::class, 'reject']);
     Route::get('atipay-transfers/{id}', [AtipayTransferController::class, 'show']);
 
     // Promotions (socios)
