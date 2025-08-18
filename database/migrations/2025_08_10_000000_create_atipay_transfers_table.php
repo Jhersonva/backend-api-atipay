@@ -12,9 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->integer('amount');
-            $table->enum('type', ['investment', 'store']);
-            $table->boolean('confirmed')->default(false);
+            $table->decimal('amount', 10, 2);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'not_evaluated'])->default('pending');
             $table->timestamps();
         });
     }

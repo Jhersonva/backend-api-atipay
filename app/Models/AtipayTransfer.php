@@ -13,13 +13,16 @@ class AtipayTransfer extends Model
         'sender_id',
         'receiver_id',
         'amount',
-        'type',
-        'confirmed',
+        'status',
     ];
 
     protected $hidden = [
         'created_at',
         'updated_at'
+    ];
+
+    protected $casts = [
+        'amount' => 'float'
     ];
 
     //El usuario que envió los Atipay

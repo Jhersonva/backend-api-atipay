@@ -10,8 +10,11 @@ class PurchaseRequest extends Model
         'user_id', 'product_id', 'quantity', 'payment_method', 'status', 'admin_message'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     public function user() { return $this->belongsTo(User::class); }
     public function product() { return $this->belongsTo(Product::class); }
 }
-
-

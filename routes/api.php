@@ -31,10 +31,11 @@ Route::middleware(IsUserAuth::class)->group(function () {
     });
 
     // Atipay Transfers
-    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);
-    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']);
+    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  //Transferencias enviadas
+    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']); //Transferencias recibidas
     Route::post('atipay-transfers', [AtipayTransferController::class, 'store']);
-    Route::post('atipay-transfers/confirm/{id}', [AtipayTransferController::class, 'confirm']);
+    Route::post('atipay-transfers/{id}/approve', [AtipayTransferController::class, 'approve']);
+    Route::post('atipay-transfers/{id}/reject', [AtipayTransferController::class, 'reject']);
     Route::get('atipay-transfers/{id}', [AtipayTransferController::class, 'show']);
 
     // Promotions (socios)
@@ -70,6 +71,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'index']);
     Route::post('investment-withdrawals', [InvestmentWithdrawalController::class, 'store']);
 
+    // Commissions Settings (socios and admin)
+    Route::get('commissions/settings', [CommissionSettingController::class, 'index']);
+
     // Admin-only routes
     Route::middleware(IsAdmin::class)->group(function () {
 
@@ -84,7 +88,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
         // Withdrawals (admin)
         Route::get('withdrawals', [WithdrawalController::class, 'index']);
         Route::get('withdrawals/{id}', [WithdrawalController::class, 'show']);
-        Route::put('withdrawals/{id}/status', [WithdrawalController::class, 'updateStatus']);
+        Route::post('withdrawals/{id}/approve', [WithdrawalController::class, 'approve']);
+        Route::post('withdrawals/{id}/reject', [WithdrawalController::class, 'reject']);
+
 
         // Atipay Recharges (admin)
         Route::get('atipay-recharges', [AtipayRechargeController::class, 'index']);
@@ -101,7 +107,6 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('products/purchase-requests/{id}/reject', [ProductController::class, 'rejectPurchase']);
 
         // Commissions Settings (admin)
-        Route::get('commissions/settings', [CommissionSettingController::class, 'index']);
         Route::post('commissions/settings', [CommissionSettingController::class, 'updateOrCreate']);
         Route::delete('commissions/settings/{level}', [CommissionSettingController::class, 'destroy']);
 

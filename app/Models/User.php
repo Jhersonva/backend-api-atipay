@@ -27,7 +27,6 @@ class User extends Authenticatable implements JWTSubject
         'status',
         'atipay_money',
         'accumulated_points',
-        'withdrawable_balance',
         'reference_code',
         'referred_by',
         'registration_date',
@@ -54,6 +53,11 @@ class User extends Authenticatable implements JWTSubject
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->name === $roleName;
     }
 
     // Devuelve la URL construida

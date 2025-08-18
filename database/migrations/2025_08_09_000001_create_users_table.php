@@ -17,7 +17,6 @@ return new class extends Migration
             $table->enum('status', allowed: ['active', 'inactive'])->default('active');
             $table->decimal('atipay_money', 10, 2)->default(0); 
             $table->integer('accumulated_points')->default(0);
-            $table->decimal('withdrawable_balance', 10, 2)->default(0);
             $table->string('reference_code')->unique();
             $table->foreignId('referred_by')->nullable()->constrained('users')->onDelete('set null');
 

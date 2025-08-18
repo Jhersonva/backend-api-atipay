@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Withdrawal extends Model
 {
@@ -11,19 +12,37 @@ class Withdrawal extends Model
 
     protected $fillable = [
         'user_id',
-        'amount',
         'method',
+        'holder',
+        'phone_number',
+        'account_number',
+        'amount',
+        'commission',
+        'net_amount',
         'status',
+        'date',
     ];
 
     protected $hidden = [
-        'password',
         'created_at',
         'updated_at'
+    ];
+
+    protected $casts = [
+        'date' => 'date',
+        'amount' => 'float',
+        'commission' => 'float',
+        'net_amount' => 'float',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Accessor para formatear la fecha
+    public function getDateAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d');
     }
 }
