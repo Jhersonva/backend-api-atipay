@@ -46,7 +46,7 @@ class ReferralCommissionService
 
                 // Sumar puntos y saldo al usuario de nivel superior
                 $uplineUser->accumulated_points += $commissionAmount;
-                $uplineUser->withdrawable_balance += $commissionAmount;
+                $uplineUser->atipay_money += $commissionAmount;
                 $uplineUser->save();
             }
 

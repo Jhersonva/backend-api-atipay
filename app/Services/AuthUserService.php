@@ -20,7 +20,7 @@ class AuthUserService
             $referrer = User::where('reference_code', $data['reference_code'])->first();
             if ($referrer) {
                 $referrer->accumulated_points += 10;
-                $referrer->withdrawable_balance += 0.50;
+                $referrer->atipay_money += 0.50;
                 $referrer->save();
 
                 $referredBy = $referrer->id;
