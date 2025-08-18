@@ -56,6 +56,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Role::class);
     }
 
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->name === $roleName;
+    }
+
     // Devuelve la URL construida
     public function getReferralUrlAttribute()
     {
