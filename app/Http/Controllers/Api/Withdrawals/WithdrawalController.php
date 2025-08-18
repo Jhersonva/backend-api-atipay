@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Api\Withdrawals;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Withdrawals\StoreWithdrawalRequest;
-use App\Http\Requests\Withdrawals\UpdateWithdrawalStatusRequest;
 use App\Services\WithdrawalService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class WithdrawalController extends Controller
 {
@@ -23,8 +21,21 @@ class WithdrawalController extends Controller
      */
     public function store(StoreWithdrawalRequest $request): JsonResponse
     {
-        $withdrawal = $this->withdrawalService->create($request->validated());
-        return response()->json(['message' => 'Solicitud enviada correctamente', 'data' => $withdrawal], 201);
+        $result = $this->withdrawalService->create($request->validated());
+
+        if ($result['error']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'],
+                'extra'   => $result['min_amount'] ?? $result['available_balance'] ?? null
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud enviada correctamente',
+            'data'    => $result['withdrawal']
+        ], 201);
     }
 
     /**
@@ -60,15 +71,20 @@ class WithdrawalController extends Controller
     }
 
     /**
-     * Admin: Aprobar o rechazar una solicitud
+     * Admin: Aprobar un retiro
      */
-    public function updateStatus(UpdateWithdrawalStatusRequest $request, $id): JsonResponse
+    public function approve($id): JsonResponse
     {
-        $withdrawal = $this->withdrawalService->updateStatus($id, $request->validated()['status']);
-        if (!$withdrawal) {
-            return response()->json(['message' => 'Solicitud no encontrada'], 404);
-        }
+        $withdrawal = $this->withdrawalService->updateStatus($id, 'approved');
+        return response()->json(['message' => 'Retiro aprobado correctamente', 'data' => $withdrawal]);
+    }
 
-        return response()->json(['message' => 'Estado actualizado', 'data' => $withdrawal]);
+    /**
+     * Admin: Rechazar un retiro
+     */
+    public function reject($id): JsonResponse
+    {
+        $withdrawal = $this->withdrawalService->updateStatus($id, 'rejected');
+        return response()->json(['message' => 'Retiro rechazado correctamente', 'data' => $withdrawal]);
     }
 }

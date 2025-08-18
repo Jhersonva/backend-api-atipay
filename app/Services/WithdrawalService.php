@@ -5,21 +5,72 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Withdrawal;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class WithdrawalService
 {
     /**
      * Crear una nueva solicitud de retiro
      */
-    public function create(array $data): Withdrawal
+    public function create(array $data)
     {
         return DB::transaction(function () use ($data) {
-            return Withdrawal::create([
-                'user_id' => auth('api')->id(),
-                'amount' => $data['amount'],
-                'method' => $data['method'],
-                'status' => 'earring',
+            $userId = auth('api')->id();
+            $user   = User::find($userId);
+
+            // Validar monto mínimo
+            if ($data['amount'] < 20) {
+                return [
+                    'error' => true,
+                    'message' => 'El monto mínimo para retirar es de S/20 soles.',
+                    'min_amount' => 20
+                ];
+            }
+
+            // Validar saldo disponible
+            if ($user->atipay_money < $data['amount']) {
+                return [
+                    'error' => true,
+                    'message' => 'No tiene saldo suficiente para retirar.',
+                    'available_balance' => $user->atipay_money
+                ];
+            }
+
+            // Validar campos según el método
+            if (in_array($data['method'], ['yape', 'plin']) && empty($data['phone_number'])) {
+                return [
+                    'error' => true,
+                    'message' => 'Debe ingresar un número de celular para Yape o Plin.'
+                ];
+            }
+
+            if (in_array($data['method'], ['transferencia_bancaria', 'transferencia_electronica']) && empty($data['account_number'])) {
+                return [
+                    'error' => true,
+                    'message' => 'Debe ingresar un número de cuenta para transferencia.'
+                ];
+            }
+
+            $commission = $data['amount'] * 0.10;
+            $netAmount  = $data['amount'] - $commission;
+
+            $withdrawal = Withdrawal::create([
+                'user_id'        => $userId,
+                'method'         => $data['method'],
+                'holder'         => $data['holder'],
+                'phone_number'   => $data['phone_number'] ?? null,
+                'account_number' => $data['account_number'] ?? null,
+                'amount'         => $data['amount'],
+                'commission'     => $commission,
+                'net_amount'     => $netAmount,
+                'status'         => 'earring',
+                'date'           => Carbon::today(),
             ]);
+
+            return [
+                'error' => false,
+                'withdrawal' => $withdrawal
+            ];
         });
     }
 
@@ -35,7 +86,6 @@ class WithdrawalService
                 throw new \Exception('Solicitud de retiro no encontrada.');
             }
 
-            // Si ya está aprobado o rechazado, no se vuelve a procesar
             if (in_array($withdrawal->status, ['approved', 'rejected'])) {
                 throw new \Exception('Este retiro ya ha sido procesado.');
             }
@@ -43,16 +93,15 @@ class WithdrawalService
             $user = $withdrawal->user;
 
             if ($status === 'approved') {
-                if ($user->withdrawable_balance < $withdrawal->amount) {
+                if ($user->atipay_money < $withdrawal->amount) {
                     throw new \Exception('Saldo insuficiente para aprobar este retiro.');
                 }
 
-                // Restar automáticamente el balance
-                $user->withdrawable_balance -= $withdrawal->amount;
+                // Restar del socio (ya no se suma nada al admin)
+                $user->atipay_money -= $withdrawal->amount;
                 $user->save();
             }
 
-            // Actualizar estado del retiro
             $withdrawal->status = $status;
             $withdrawal->save();
 

@@ -27,7 +27,6 @@ class User extends Authenticatable implements JWTSubject
         'status',
         'atipay_money',
         'accumulated_points',
-        'withdrawable_balance',
         'reference_code',
         'referred_by',
         'registration_date',
