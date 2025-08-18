@@ -113,7 +113,6 @@ class ProductService
     /**
      * Procesar compra de producto por un usuario
      */
-
     public function purchaseProduct(User $user, Product $product, int $quantity = 1, string $paymentMethod = 'atipay'): bool
     {
         return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
@@ -125,11 +124,12 @@ class ProductService
             $totalPoints = $product->points_earned * $quantity;
 
             if ($paymentMethod === 'atipay') {
-                if ($user->atipay_store_balance < $totalPrice) {
+                if ($user->atipay_money < $totalPrice) {
                     throw new \Exception('Saldo Atipay insuficiente.');
                 }
 
-                $user->atipay_store_balance -= $totalPrice;
+                // Se descuenta desde atipay_money
+                $user->atipay_money -= $totalPrice;
                 $user->accumulated_points += $totalPoints; 
                 $user->save();
 
@@ -155,14 +155,45 @@ class ProductService
 
     public function requestPurchase(User $user, Product $product, int $quantity, string $paymentMethod): PurchaseRequest
     {
-        return PurchaseRequest::create([
-            'user_id' => $user->id,
-            'product_id' => $product->id,
-            'quantity' => $quantity,
-            'payment_method' => $paymentMethod,
-            'status' => 'pending',
-        ]);
+        return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
+            if ($product->stock < $quantity) {
+                throw new \Exception('Stock insuficiente.');
+            }
+
+            $totalPrice  = $product->price * $quantity;
+
+            // Descuento inmediato del dinero/puntos
+            if ($paymentMethod === 'atipay') {
+                if ($user->atipay_money < $totalPrice) {
+                    throw new \Exception('Saldo Atipay insuficiente.');
+                }
+                $user->atipay_money -= $totalPrice;
+                $user->save();
+            } elseif ($paymentMethod === 'points') {
+                if ($user->accumulated_points < $totalPrice) {
+                    throw new \Exception('Puntos insuficientes.');
+                }
+                $user->accumulated_points -= $totalPrice;
+                $user->save();
+            } else {
+                throw new \Exception('Método de pago inválido.');
+            }
+
+            // Reducir stock
+            $product->stock -= $quantity;
+            $product->save();
+
+            // Crear solicitud pendiente
+            return PurchaseRequest::create([
+                'user_id'       => $user->id,
+                'product_id'    => $product->id,
+                'quantity'      => $quantity,
+                'payment_method'=> $paymentMethod,
+                'status'        => 'pending',
+            ]);
+        });
     }
+
 
     public function getAllPurchaseRequests()
     {
@@ -174,42 +205,74 @@ class ProductService
         return PurchaseRequest::with('product')->where('user_id', $user->id)->latest()->get();
     }
 
-    public function approvePurchase(int $requestId): bool
+    /**
+     * Aprobar una solicitud de compra pendiente.
+     */
+    public function approvePurchase(int $id, ?string $adminMessage = null): PurchaseRequest
     {
-        return DB::transaction(function () use ($requestId) {
-            $request = PurchaseRequest::findOrFail($requestId);
+        return DB::transaction(function () use ($id, $adminMessage) {
+            $purchaseRequest = PurchaseRequest::findOrFail($id);
 
-            if ($request->status !== 'pending') {
-                throw new \Exception('La compra ya fue procesada.');
+            if ($purchaseRequest->status !== 'pending') {
+                throw new \Exception('La solicitud ya fue procesada.');
             }
 
-            $this->purchaseProduct(
-                $request->user,
-                $request->product,
-                $request->quantity,
-                $request->payment_method
-            );
+            $product = $purchaseRequest->product;
+            $user    = $purchaseRequest->user;
 
-            $request->update(['status' => 'approved']);
+            $totalPoints = $product->points_earned * $purchaseRequest->quantity;
 
-            return true;
+            // Sumar puntos y procesar referidos
+            if ($purchaseRequest->payment_method === 'atipay') {
+                $user->accumulated_points += $totalPoints;
+                $user->save();
+
+                $this->referralService->process($user, $totalPoints, 'purchase');
+            }
+
+            $purchaseRequest->status = 'approved';
+            $purchaseRequest->admin_message = $adminMessage;
+            $purchaseRequest->save();
+
+            return $purchaseRequest->fresh();
         });
     }
 
-    public function rejectPurchase(int $requestId, string $message = null): bool
+    /**
+     * Rechazar una solicitud de compra pendiente.
+     */
+    public function rejectPurchase(int $id, ?string $adminMessage = null): PurchaseRequest
     {
-        $request = PurchaseRequest::findOrFail($requestId);
+        return DB::transaction(function () use ($id, $adminMessage) {
+            $purchaseRequest = PurchaseRequest::findOrFail($id);
 
-        if ($request->status !== 'pending') {
-            throw new \Exception('La compra ya fue procesada.');
-        }
+            if ($purchaseRequest->status !== 'pending') {
+                throw new \Exception('La solicitud ya fue procesada.');
+            }
 
-        $request->update([
-            'status' => 'rejected',
-            'admin_message' => $message,
-        ]);
+            $product = $purchaseRequest->product;
+            $user    = $purchaseRequest->user;
+            $totalPrice  = $product->price * $purchaseRequest->quantity;
 
-        return true;
+            // Devolver dinero/puntos
+            if ($purchaseRequest->payment_method === 'atipay') {
+                $user->atipay_money += $totalPrice;
+                $user->save();
+            } elseif ($purchaseRequest->payment_method === 'points') {
+                $user->accumulated_points += $totalPrice;
+                $user->save();
+            }
+
+            // Restaurar stock
+            $product->stock += $purchaseRequest->quantity;
+            $product->save();
+
+            $purchaseRequest->status = 'rejected';
+            $purchaseRequest->admin_message = $adminMessage;
+            $purchaseRequest->save();
+
+            return $purchaseRequest->fresh();
+        });
     }
 
     /**

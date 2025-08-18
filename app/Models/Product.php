@@ -23,6 +23,13 @@ class Product extends Model
     protected $hidden = ['created_at', 'updated_at', 'image_path'];
     protected $appends = ['image_url'];
 
+    protected $casts = [
+        'price' => 'float',
+        'points_to_redeem' => 'float',
+        'points_earned' => 'float',
+        'stock' => 'integer'
+    ];
+
     public function getImageUrlAttribute()
     {
         return $this->image_path

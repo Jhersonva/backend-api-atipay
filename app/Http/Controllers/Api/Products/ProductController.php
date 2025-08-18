@@ -117,11 +117,18 @@ class ProductController extends Controller
         }
     }
 
-    public function approvePurchase($id)
+    public function approvePurchase(Request $request, $id)
     {
         try {
-            $this->productService->approvePurchase($id);
-            return response()->json(['message' => 'Compra aprobada y procesada correctamente.']);
+            $purchaseRequest = $this->productService->approvePurchase(
+                $id,
+                $request->input('admin_message') 
+            );
+
+            return response()->json([
+                'message' => 'Compra aprobada y procesada correctamente.',
+                'data' => $purchaseRequest
+            ]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
