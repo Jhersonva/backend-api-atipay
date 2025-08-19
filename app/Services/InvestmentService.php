@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\Investment;
+use App\Models\InvestmentWithdrawal;
 use App\Models\Promotion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class InvestmentService
 {
@@ -24,64 +26,66 @@ class InvestmentService
     {
         return DB::transaction(function () use ($user, $data) {
 
-            // Obtener la promoción
             $promotion = Promotion::findOrFail($data['promotion_id']);
-
-            // Usar el precio de la promoción
             $price = $promotion->atipay_price_promotion;
 
-            // Validar saldo usando atipay_money
             if ($user->atipay_money < $price) {
                 throw new \Exception('Saldo insuficiente para realizar esta inversión.');
             }
 
-            // Descontar del saldo atipay_money
             $user->atipay_money -= $price;
             $user->save();
 
-            // Crear inversión
-            $investment = Investment::create([
-                'user_id'       => $user->id,
-                'promotion_id'  => $promotion->id,
-                'status'        => 'pending',
-                'daily_earning' => $this->calculateDailyEarning($price, $promotion),
-            ]);
+            $totalEarning = $price * ($promotion->percentaje / 100);
 
-            return $investment;
+            // Estimación de días usando promedio 30.44 días por mes
+            $estimatedTotalDays = round($promotion->duration_months * 30.44);
+            $dailyEarning = $estimatedTotalDays > 0 ? round($totalEarning / $estimatedTotalDays, 2) : 0;
+
+            return Investment::create([
+                'user_id'        => $user->id,
+                'promotion_id'   => $promotion->id,
+                'status'         => 'pending',
+                'daily_earning'  => $dailyEarning,    
+                'total_earning'  => round($totalEarning, 2),
+                'already_earned' => 0,
+            ]);
         });
     }
 
     /**
-    * Aprobar solicitud de inversion
+     * Aprobacion de inversiones 
     */
     public function approve(Investment $investment, string $adminMessage = null): void
     {
-        // Fecha de inicio: a las 00:00 del día actual
-        $startDate = now()->addDay()->startOfDay();
+        if ($investment->status !== 'pending') return;
 
-        // Fecha de fin: sumar los meses que dura la promoción y fijar a las 00:00
+        $startDate = now();
         $durationMonths = $investment->promotion->duration_months;
-        $endDate = $startDate->copy()->addMonths($durationMonths)->startOfDay();
+        $endDate = $startDate->copy()->addMonths($durationMonths)->subSecond(); 
+
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+        $dailyEarning = $totalDays > 0 ? round($investment->total_earning / $totalDays, 2) : 0;
 
         $investment->update([
-            'status'        => 'active',
-            'approved_at'   => now(),
-            'rejected_at'   => null,
-            'start_date'    => $startDate,
-            'end_date'      => $endDate,
-            'admin_message' => $adminMessage,
+            'status'         => 'active',
+            'approved_at'    => $startDate,
+            'start_date'     => $startDate,
+            'end_date'       => $endDate,
+            'daily_earning'  => $dailyEarning,
+            'already_earned' => 0,
+            'last_earned_at' => $startDate, 
+            'admin_message'  => $adminMessage,
         ]);
     }
 
     /**
-    * Rechazar solicitud de inversion
+     * Rechazo de inversiones
     */
     public function reject(Investment $investment, string $adminMessage = null): void
     {
         DB::transaction(function () use ($investment, $adminMessage) {
-            if ($investment->status === 'rejected') {
-                return; 
-            }
+            if ($investment->status === 'rejected') return;
 
             $investment->update([
                 'status' => 'rejected',
@@ -90,53 +94,185 @@ class InvestmentService
                 'admin_message' => $adminMessage,
             ]);
 
-            // Obtener el precio de la promoción para reembolsar
-            $promotionPrice = $investment->promotion->atipay_price_promotion;
-
-            // Devolver el monto al saldo atipay_money
             $user = $investment->user;
-            $user->atipay_money += $promotionPrice;
+            $user->atipay_money += $investment->promotion->atipay_price_promotion;
             $user->save();
         });
     }
 
     /**
-    * Calcular el monto de la inversión
+     * Actualizacion automatica de ganancias 
     */
-    private function calculateDailyEarning(float $price, Promotion $promotion): float
+    public function autoUpdateEarnings(Investment $investment)
     {
-        // Ganancia total en función del precio de la promoción
-        $totalReturn = $price * ($promotion->percentaje / 100);
+        if ($investment->status !== 'active' || !$investment->start_date) {
+            return $investment;
+        }
 
-        // Duración total en días
-        $days = $promotion->duration_months * 30;
+        $now = now();
+        $start = Carbon::parse($investment->start_date);
 
-        return round($totalReturn / $days, 2);
+        if ($now->lt($start)) {
+            $investment->already_earned = 0;
+            $investment->save();
+            return $investment;
+        }
+
+        // Última fecha en la que se sumaron ganancias
+        $lastEarned = $investment->last_earned_at 
+            ? Carbon::parse($investment->last_earned_at) 
+            : $start->copy()->subDay(); // <-- forzar que se sume el primer día
+
+        // Calculando días completos desde la última actualización
+        $daysElapsed = $lastEarned->diffInDays($now);
+
+        if ($daysElapsed < 1) {
+            return $investment;
+        }
+
+        // Solo sumamos los días completos transcurridos
+        $earned = round($daysElapsed * $investment->daily_earning, 2);
+
+        $investment->already_earned = min($investment->already_earned + $earned, $investment->total_earning);
+
+        // Guardar la fecha de la última actualización
+        $investment->last_earned_at = $lastEarned->copy()->addDays($daysElapsed);
+        $investment->save();
+
+        return $investment;
     }
 
     /**
-    * Obtener el monto de la inversión
+     * Obtener ganancias de inversiones
     */
     public function getInvestmentGains(User $user, int $investmentId): array
     {
-        $investment = $user->investments()->where('id', $investmentId)->firstOrFail();
+        $investment = $user->investments()->with('promotion')->where('id', $investmentId)->firstOrFail();
 
+        if ($investment->status !== 'active') throw new \Exception('La inversión no está activa.');
+
+        $promotion = $investment->promotion;
+        $durationMonths = $promotion->duration_months;
+        $startDate = Carbon::parse($investment->start_date);
+        $now = now();
+
+        $gains = [];
+        for ($i = 1; $i <= $durationMonths; $i++) {
+            $monthStart = $startDate->copy()->addMonthsNoOverflow($i - 1);
+            $monthEnd   = $monthStart->copy()->addMonthNoOverflow()->subSecond(); 
+            $daysInMonth = $monthStart->diffInDays($monthEnd) + 1;
+            $monthlyGain = round($investment->daily_earning * $daysInMonth, 2);
+
+            if ($now->greaterThanOrEqualTo($monthEnd)) {
+                $status = 'completado';
+                $gain = $monthlyGain;
+            } elseif ($now->between($monthStart, $monthEnd)) {
+                $secondsElapsed = $monthStart->diffInSeconds($now);
+                $daysElapsed = floor($secondsElapsed / (24 * 60 * 60)) + 1;
+                $gain = round($investment->daily_earning * min($daysElapsed, $daysInMonth), 2);
+                $status = 'en curso';
+            } else {
+                $gain = 0;
+                $status = 'pendiente';
+            }
+
+            $gains[] = [
+                'month'   => $i,
+                'period'  => $monthStart->format('Y-m-d H:i:s') . ' a ' . $monthEnd->format('Y-m-d H:i:s'),
+                'gain'    => $gain,
+                'status'  => $status
+            ];
+        }
+
+        return [
+            'investment_id'  => $investment->id,
+            'price'          => $promotion->atipay_price_promotion,
+            'percentaje'     => $promotion->percentaje,
+            'duration_months'=> $durationMonths,
+            'daily_earning'  => $investment->daily_earning,
+            'gains_by_month' => $gains,
+            'total_projected'=> $investment->total_earning,
+        ];
+    }
+
+    /**
+     * Obtener ganancias de diarias de inversiones
+    */
+    public function getInvestmentDailyGains(User $user, int $investmentId): array
+    {
+        $investment = $user->investments()->with('promotion')->where('id', $investmentId)->firstOrFail();
+
+        if ($investment->status !== 'active') throw new \Exception('La inversión no está activa.');
+
+        $startDate = Carbon::parse($investment->start_date);
+        $endDate   = Carbon::parse($investment->end_date);
+        $now       = now();
+
+        $gains = [];
+        $currentDate = $startDate->copy();
+
+        while ($currentDate->lte($endDate)) {
+            // Calcular si el pago de hoy ya corresponde según la hora exacta
+            if ($now->greaterThanOrEqualTo($currentDate)) {
+                $status = $now->between($currentDate, $currentDate->copy()->addDay()->subSecond()) 
+                    ? 'hoy' : 'completado';
+                $gain = $investment->daily_earning;
+            } else {
+                $status = 'pendiente';
+                $gain = 0;
+            }
+
+            $gains[] = [
+                'date'  => $currentDate->format('Y-m-d H:i:s'),
+                'gain'  => $gain,
+                'status'=> $status,
+            ];
+
+            $currentDate->addDay();
+        }
+
+        return [
+            'investment_id'  => $investment->id,
+            'daily_earning'  => $investment->daily_earning,
+            'gains_by_day'   => $gains,
+            'total_projected'=> $investment->total_earning,
+        ];
+    }
+
+    /**
+     * Retirar ganancias
+    */
+    public function withdrawEarnings(User $user, Investment $investment): float
+    {
         if ($investment->status !== 'active') {
             throw new \Exception('La inversión no está activa.');
         }
 
-        $startDate = $investment->approved_at ?? $investment->created_at;
-        $today = now();
-        $daysActive = $startDate->diffInDays($today);
+        $this->autoUpdateEarnings($investment);
 
-        $totalGain = round($daysActive * $investment->daily_earning, 2);
+        $available = round($investment->already_earned, 2);
 
-        return [
-            'investment_id' => $investment->id,
-            'days_active' => $daysActive,
-            'daily_earning' => $investment->daily_earning,
-            'total_gain' => $totalGain,
-            'approved_at' => $investment->approved_at,
-        ];
+        if ($available <= 0) {
+            throw new \Exception('No tienes ganancias disponibles para retirar.');
+        }
+
+        return DB::transaction(function () use ($user, $investment, $available) {
+            // Aumentar saldo en la wallet
+            $user->atipay_money = round($user->atipay_money + $available, 2);
+            $user->save();
+
+            // Registrar en investment_withdrawals
+            InvestmentWithdrawal::create([
+                'investment_id' => $investment->id,
+                'amount'        => $available,
+                'transferred_at'=> now(),
+            ]);
+
+            // Resetear ganancias ya retiradas
+            $investment->already_earned = 0;
+            $investment->save();
+
+            return $available;
+        });
     }
 }

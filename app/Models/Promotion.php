@@ -24,5 +24,6 @@ class Promotion extends Model
 
     protected $casts = [
         'atipay_price_promotion' => 'float',
+        'percentaje' => 'float',
     ];
 }

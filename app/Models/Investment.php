@@ -14,14 +14,15 @@ class Investment extends Model
     protected $fillable = [
         'user_id',
         'promotion_id',
-        'amount',
         'status',
         'admin_message',
         'daily_earning',
+        'total_earning',
+        'already_earned',
         'approved_at',
         'rejected_at',
         'start_date',
-        'end_date',
+        'end_date'
     ];
 
     protected $hidden = [
@@ -30,11 +31,13 @@ class Investment extends Model
     ];
 
     protected $casts = [
-        'daily_earning' => 'float',
-        'approved_at' => 'datetime',
-        'rejected_at'   => 'datetime',
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'daily_earning'   => 'float',
+        'total_earning'   => 'float',
+        'already_earned'  => 'float',
+        'approved_at'     => 'datetime',
+        'rejected_at'     => 'datetime',
+        'start_date'      => 'datetime',
+        'end_date'        => 'datetime',
     ];
 
     protected function approvedAt(): Attribute
@@ -52,6 +55,20 @@ class Investment extends Model
             get: fn ($value) => $value
                 ? Carbon::parse($value)->format('Y-m-d H:i:s')
                 : null,
+        );
+    }
+
+    protected function startDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('Y-m-d H:i:s') : null
+        );
+    }
+
+    protected function endDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('Y-m-d H:i:s') : null
         );
     }
 

@@ -46,29 +46,42 @@ class ReferralController extends Controller
     /**
      * Ver red de afiliados de cualquier usuario (por nivel) - ADMIN
      */
-    public function referralNetwork($userId): JsonResponse
+    public function myReferralNetwork()
     {
-        $user = User::findOrFail($userId);
+        $user = auth('api')->user();
 
-        $levels = [];
-        $currentLevelUsers = [$user];
-
-        for ($level = 1; $level <= 5; $level++) {
-            $nextLevelUsers = [];
-            foreach ($currentLevelUsers as $u) {
-                $referrals = $u->referrals()->get(['id', 'username', 'email']);
-                if ($referrals->isNotEmpty()) {
-                    $levels[$level] = $levels[$level] ?? collect();
-                    $levels[$level] = $levels[$level]->merge($referrals);
-                    $nextLevelUsers = array_merge($nextLevelUsers, $referrals->all());
-                }
-            }
-            $currentLevelUsers = $nextLevelUsers;
+        if (!in_array($user->role->name, [User::ROLE_PARTNER, User::ROLE_ADMIN])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para ver esta información.'
+            ], 403);
         }
 
-        return response()->json($levels);
+        $levels = [];
+        $currentLevelUsers = [$user->id];
+
+        for ($level = 1; $level <= 5; $level++) {
+            $referrals = User::whereIn('referred_by', $currentLevelUsers)
+                ->select('id', 'username', 'email', 'created_at')
+                ->get();
+
+            if ($referrals->isEmpty()) {
+                break;
+            }
+
+            $levels["nivel_$level"] = $referrals;
+            $currentLevelUsers = $referrals->pluck('id')->toArray();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $levels,
+        ]);
     }
 
+    /**
+     * Ver y contar mis niveles de referencias
+    */
     public function myReferralLevelsCount()
     {
         $user = auth('api')->user();
