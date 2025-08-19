@@ -12,14 +12,12 @@ class InvestmentWithdrawal extends Model
     protected $fillable = [
         'investment_id',
         'amount',
-        'status',
-        'admin_message',
-        'processed_at',
+        'transferred_at',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2',
-        'processed_at' => 'datetime',
+        'amount'        => 'float',
+        'transferred_at'=> 'datetime:Y-m-d H:i:s',
     ];
 
     protected $hidden = [
@@ -27,7 +25,6 @@ class InvestmentWithdrawal extends Model
         'updated_at'
     ];
 
-    // Relaciones
     public function investment()
     {
         return $this->belongsTo(Investment::class);

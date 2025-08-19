@@ -8,6 +8,9 @@ use App\Models\User;
 
 class InvestmentWithdrawalService
 {
+    /**
+     * Solicitar un retiro de una inversión activa
+    */
     public function requestWithdrawal(Investment $investment, float $amount): InvestmentWithdrawal
     {
         if ($investment->status !== 'active') {
@@ -21,6 +24,9 @@ class InvestmentWithdrawalService
         ]);
     }
 
+    /**
+     * Aprobar un retiro
+    */
     public function approve(InvestmentWithdrawal $withdrawal): void
     {
         $withdrawal->update([
@@ -29,6 +35,9 @@ class InvestmentWithdrawalService
         ]);
     }
 
+    /**
+     * Obtener todos los retiros de un usuario
+    */ 
     public function getUserWithdrawals(User $user)
     {
         return InvestmentWithdrawal::whereHas('investment', function ($query) use ($user) {
@@ -36,6 +45,9 @@ class InvestmentWithdrawalService
         })->latest()->get();
     }
 
+    /**
+     * Rechazar un retiro con mensaje opcional del admin
+    */ 
     public function reject(InvestmentWithdrawal $withdrawal, string $adminMessage = null): void
     {
         $withdrawal->update([

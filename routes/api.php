@@ -66,6 +66,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::get('investments', [InvestmentController::class, 'index']);
     Route::post('investments', [InvestmentController::class, 'store']);
     Route::get('investments/{id}/daily-gains', [InvestmentController::class, 'dailyGains']);
+    Route::get('investments/{id}/monthly-gains', [InvestmentController::class, 'monthlyGains']);
+    Route::get('investments/active', [InvestmentController::class, 'active']);
+    Route::post('investments/{id}/withdraw', [InvestmentController::class, 'withdrawEarnings']);
 
     // Retiros de inversiones (socios)
     Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'index']);
@@ -116,7 +119,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
         // Inversiones (admin)
         Route::get('investments/pending', [InvestmentController::class, 'pending']);
-        Route::get('investments/active', [InvestmentController::class, 'active']);
+        //Route::get('investments/active', [InvestmentController::class, 'active']);
         Route::post('investments/{id}/approve', [InvestmentController::class, 'approve']);
         Route::post('investments/{id}/reject', [InvestmentController::class, 'reject']);
 

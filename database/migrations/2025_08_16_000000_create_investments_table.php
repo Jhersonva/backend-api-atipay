@@ -14,7 +14,11 @@ return new class extends Migration
             $table->foreignId('promotion_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['pending', 'active', 'finished', 'rejected'])->default('pending');
             $table->text('admin_message')->nullable();
-            $table->decimal('daily_earning', 10, 2)->default(0);
+            $table->decimal('daily_earning', 20, 2)->default(0);
+            $table->decimal('total_earning', 20, 2)->default(0); 
+            $table->decimal('already_earned', 20, 2)->default(0);
+            $table->timestamp('last_earned_at')->nullable();
+
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->timestamp('start_date')->nullable();

@@ -50,7 +50,7 @@ class ReferralController extends Controller
     {
         $user = auth('api')->user();
 
-        if ($user->role->name !== User::ROLE_PARTNER) {
+        if (!in_array($user->role->name, [User::ROLE_PARTNER, User::ROLE_ADMIN])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para ver esta información.'
@@ -79,6 +79,9 @@ class ReferralController extends Controller
         ]);
     }
 
+    /**
+     * Ver y contar mis niveles de referencias
+    */
     public function myReferralLevelsCount()
     {
         $user = auth('api')->user();

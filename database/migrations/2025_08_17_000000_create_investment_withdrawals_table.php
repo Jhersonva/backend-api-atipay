@@ -11,10 +11,8 @@ return new class extends Migration
         Schema::create('investment_withdrawals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('investment_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 10, 2); 
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
-            $table->text('admin_message')->nullable(); 
-            $table->timestamp('processed_at')->nullable();
+            $table->decimal('amount', 12, 2);
+            $table->timestamp('transferred_at');
             $table->timestamps();
         });
     }
