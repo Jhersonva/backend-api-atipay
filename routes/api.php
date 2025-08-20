@@ -71,8 +71,8 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::post('investments/{id}/withdraw', [InvestmentController::class, 'withdrawEarnings']);
 
     // Retiros de inversiones (socios)
-    Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'index']);
-    Route::post('investment-withdrawals', [InvestmentWithdrawalController::class, 'store']);
+    //Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'index']);
+    //Route::post('investment-withdrawals', [InvestmentWithdrawalController::class, 'store']);
 
     // Commissions Settings (socios and admin)
     Route::get('commissions/settings', [CommissionSettingController::class, 'index']);
