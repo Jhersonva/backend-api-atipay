@@ -78,7 +78,6 @@ class AtipayRechargeService
             // Actualizar saldo unificado y puntos
             $user = $recharge->user;
             $user->atipay_money += $recharge->amount;
-            $user->accumulated_points += $recharge->amount;
             $user->save();
 
             return $recharge;

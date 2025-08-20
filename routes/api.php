@@ -124,9 +124,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('investments/{id}/reject', [InvestmentController::class, 'reject']);
 
         // Retiros de inversiones (admin)
-        Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'all']);
-        Route::post('investment-withdrawals/{id}/approve', [InvestmentWithdrawalController::class, 'approve']);
-        Route::post('investment-withdrawals/{id}/reject', [InvestmentWithdrawalController::class, 'reject']);
+        //Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'all']);
+        //Route::post('investment-withdrawals/{id}/approve', [InvestmentWithdrawalController::class, 'approve']);
+        //Route::post('investment-withdrawals/{id}/reject', [InvestmentWithdrawalController::class, 'reject']);
 
     });
     
