@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseRequest extends Model
 {
-    protected $fillable = [
-        'user_id', 'product_id', 'quantity', 'payment_method', 'status', 'admin_message'
-    ];
+    protected $fillable = ['user_id', 'product_id', 'quantity', 'payment_method', 'status', 'admin_message', 'request_date', 'request_time'];
 
     protected $hidden = [
         'created_at',

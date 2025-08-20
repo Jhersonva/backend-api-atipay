@@ -11,7 +11,7 @@ use App\Http\Service\Image\SaveImage;
 use App\Http\Service\Image\DeleteImage;
 use App\Services\ReferralCommissionService;
 use App\Models\PurchaseRequest;
-use App\Models\MonthlyUserPoint;
+use Carbon\Carbon;
 use App\Models\User;
 
 class ProductService
@@ -30,7 +30,7 @@ class ProductService
      */
     public function getAll()
     {
-        return Product::with('course')->where('status', 'active')->latest()->get();
+        return Product::with('course')->latest()->get();
     }
 
     /**
@@ -116,6 +116,18 @@ class ProductService
     public function purchaseProduct(User $user, Product $product, int $quantity = 1, string $paymentMethod = 'atipay'): bool
     {
         return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
+            if ($product->status !== 'active') {
+                throw new \Exception('Este producto no está disponible para comprar.');
+            }
+
+            if ($quantity <= 0) {
+                throw new \Exception('La cantidad debe ser al menos 1.');
+            }
+
+            if ($product->stock <= 0) {
+                throw new \Exception('Este producto está agotado y no se puede comprar.');
+            }
+            
             if ($product->stock < $quantity) {
                 throw new \Exception('Stock insuficiente.');
             }
@@ -147,6 +159,11 @@ class ProductService
             }
 
             $product->stock -= $quantity;
+
+            if ($product->stock === 0) {
+                $product->status = 'inactive';
+            }
+
             $product->save();
 
             return true;
@@ -156,6 +173,18 @@ class ProductService
     public function requestPurchase(User $user, Product $product, int $quantity, string $paymentMethod): PurchaseRequest
     {
         return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
+            if ($product->status !== 'active') {
+                throw new \Exception('Este producto no está disponible para comprar.');
+            }
+
+            if ($quantity <= 0) {
+                throw new \Exception('La cantidad debe ser al menos 1.');
+            }
+
+            if ($product->stock <= 0) {
+                throw new \Exception('Este producto está agotado y no se puede comprar.');
+            }
+            
             if ($product->stock < $quantity) {
                 throw new \Exception('Stock insuficiente.');
             }
@@ -181,7 +210,15 @@ class ProductService
 
             // Reducir stock
             $product->stock -= $quantity;
+            if ($product->stock === 0) {
+                $product->status = 'inactive';
+            }
             $product->save();
+
+            // Capturando fecha y hora
+            $now = Carbon::now();
+            $requestDate = $now->toDateString();          
+            $requestTime = $now->format('g:i A');     
 
             // Crear solicitud pendiente
             return PurchaseRequest::create([
@@ -190,6 +227,8 @@ class ProductService
                 'quantity'      => $quantity,
                 'payment_method'=> $paymentMethod,
                 'status'        => 'pending',
+                'request_date'  => $requestDate,
+                'request_time'  => $requestTime,
             ]);
         });
     }
@@ -265,6 +304,10 @@ class ProductService
 
             // Restaurar stock
             $product->stock += $purchaseRequest->quantity;
+
+             if ($product->status === 'inactive' && $product->stock > 0) {
+                $product->status = 'active';
+            }
             $product->save();
 
             $purchaseRequest->status = 'rejected';

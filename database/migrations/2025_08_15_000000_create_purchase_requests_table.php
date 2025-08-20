@@ -16,6 +16,9 @@ return new class extends Migration
             $table->enum('payment_method', ['atipay', 'points']);
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->text('admin_message')->nullable();
+
+            $table->date('request_date');   
+            $table->string('request_time');
             $table->timestamps();
         });
     }
