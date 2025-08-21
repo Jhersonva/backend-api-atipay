@@ -113,7 +113,7 @@ class ProductController extends Controller
 
             return response()->json(['message' => 'Compra enviada. Pendiente de aprobación.']);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 

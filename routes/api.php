@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Referrals\ReferralController;
 use App\Http\Controllers\Api\Commissions\CommissionSummaryController;
 use App\Http\Controllers\Api\Investments\InvestmentController;
 use App\Http\Controllers\Api\Investments\InvestmentWithdrawalController;
+use App\Http\Controllers\Api\Reward\RewardController;
 
 
 use App\Http\Middleware\IsAdmin;
@@ -30,7 +31,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::get('user', 'getUser');
     });
 
-    // Atipay Transfers
+    // Atipay Transfers (Auth)
     Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  //Transferencias enviadas
     Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']); //Transferencias recibidas
     Route::post('atipay-transfers', [AtipayTransferController::class, 'store']);
@@ -38,31 +39,35 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::post('atipay-transfers/{id}/reject', [AtipayTransferController::class, 'reject']);
     Route::get('atipay-transfers/{id}', [AtipayTransferController::class, 'show']);
 
-    // Promotions (socios)
+    // Promotions (Auth)
     Route::get('promotions', [PromotionController::class, 'index']);
     Route::get('promotions/{id}', [PromotionController::class, 'show']);
 
-    // Withdrawals (socios)
+    // Withdrawals (Auth)
     Route::post('withdrawals', [WithdrawalController::class, 'store']);
     Route::get('withdrawals/my', [WithdrawalController::class, 'myWithdrawals']);
 
-    // Atipay Recharges (socios)
+    // Atipay Recharges (Auth)
     Route::post('atipay-recharges', [AtipayRechargeController::class, 'store']);
     Route::get('atipay-recharges/my', [AtipayRechargeController::class, 'myRecharges']);
 
-    // Products (socios)
+    // Products (Auth)
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/my-purchase-requests', [ProductController::class, 'myPurchaseRequests']);
     Route::post('products/purchase', [ProductController::class, 'purchase']);
 
-    //Route::get('referrals/my-monthly-points', [ReferralController::class, 'myMonthlyPoints']);
-    //Route::get('referrals/my-commissions-by-level', [ReferralController::class, 'myCommissionsByLevel']);
+    // Reward (Auth)
+    Route::get('/rewards', [RewardController::class, 'index']);
+    Route::get('/rewards/{id}', [RewardController::class, 'show']);
 
-    // Ver Red de afiliados propios (socios)
+    // Canjear Recomenzas
+    Route::post('/rewards/{id}/redeem', [RewardController::class, 'redeem']);
+
+    // Ver Red de afiliados propios (Auth)
     Route::get('referrals/my-network-count', [ReferralController::class, 'myReferralLevelsCount']);
     Route::get('referrals/my-network', [ReferralController::class, 'myReferralNetwork']);
 
-    // Inversiones (socios)
+    // Inversiones (Auth)
     Route::get('investments', [InvestmentController::class, 'index']);
     Route::post('investments', [InvestmentController::class, 'store']);
     Route::get('investments/{id}/daily-gains', [InvestmentController::class, 'dailyGains']);
@@ -70,18 +75,14 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::get('investments/active', [InvestmentController::class, 'active']);
     Route::post('investments/{id}/withdraw', [InvestmentController::class, 'withdrawEarnings']);
 
-    // Retiros de inversiones (socios)
-    //Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'index']);
-    //Route::post('investment-withdrawals', [InvestmentWithdrawalController::class, 'store']);
-
-    // Commissions Settings (socios and admin)
+    // Commissions Settings (Auth)
     Route::get('commissions/settings', [CommissionSettingController::class, 'index']);
 
     // Admin-only routes
     Route::middleware(IsAdmin::class)->group(function () {
 
-        // Listar Users (Partner y Admin)
-        Route::get('users', [AuthUserController::class, 'index']);
+        // Listar Users (Admin)
+            Route::get('users', [AuthUserController::class, 'index']);
 
         // Promotions (admin)
         Route::post('promotions', [PromotionController::class, 'store']);
@@ -93,7 +94,6 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::get('withdrawals/{id}', [WithdrawalController::class, 'show']);
         Route::post('withdrawals/{id}/approve', [WithdrawalController::class, 'approve']);
         Route::post('withdrawals/{id}/reject', [WithdrawalController::class, 'reject']);
-
 
         // Atipay Recharges (admin)
         Route::get('atipay-recharges', [AtipayRechargeController::class, 'index']);
@@ -109,24 +109,19 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('products/purchase-requests/{id}/approve', [ProductController::class, 'approvePurchase']);
         Route::post('products/purchase-requests/{id}/reject', [ProductController::class, 'rejectPurchase']);
 
+        // Reward (admin)
+        Route::post('/rewards', [RewardController::class, 'store']); 
+        Route::put('/rewards/{id}', [RewardController::class, 'update']);
+        Route::delete('/rewards/{id}', [RewardController::class, 'destroy']);
+
         // Commissions Settings (admin)
         Route::post('commissions/settings', [CommissionSettingController::class, 'updateOrCreate']);
         Route::delete('commissions/settings/{level}', [CommissionSettingController::class, 'destroy']);
 
-        //
-        //Route::get('admin/referrals/network/{userId}', [ReferralController::class, 'viewNetworkByLevels']);
-        //Route::get('admin/commissions/summary', [CommissionSummaryController::class, 'summaryByUser']);
-
         // Inversiones (admin)
         Route::get('investments/pending', [InvestmentController::class, 'pending']);
-        //Route::get('investments/active', [InvestmentController::class, 'active']);
         Route::post('investments/{id}/approve', [InvestmentController::class, 'approve']);
         Route::post('investments/{id}/reject', [InvestmentController::class, 'reject']);
-
-        // Retiros de inversiones (admin)
-        //Route::get('investment-withdrawals', [InvestmentWithdrawalController::class, 'all']);
-        //Route::post('investment-withdrawals/{id}/approve', [InvestmentWithdrawalController::class, 'approve']);
-        //Route::post('investment-withdrawals/{id}/reject', [InvestmentWithdrawalController::class, 'reject']);
 
     });
     

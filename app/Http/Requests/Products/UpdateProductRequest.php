@@ -17,7 +17,6 @@ class UpdateProductRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0',
-            'points_to_redeem' => 'sometimes|integer|min:0',
             'points_earned' => 'sometimes|integer|min:0',
             'unit_type' => 'nullable|string|in:unit,package,kilo,talla,education',
             'stock' => 'sometimes|integer|min:0',

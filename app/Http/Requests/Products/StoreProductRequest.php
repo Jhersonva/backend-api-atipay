@@ -17,7 +17,6 @@ class StoreProductRequest extends FormRequest
             'name' => 'required|string|max:255',
             'type' => 'required|in:product,course',
             'price' => 'required|numeric|min:0',
-            'points_to_redeem' => 'required|integer|min:0',
             'points_earned' => 'required|integer|min:0',
             'unit_type' => 'nullable|string|in:unit,package,kilo,talla,education',
             'stock' => 'required|integer|min:0',

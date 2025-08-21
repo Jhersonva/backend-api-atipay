@@ -146,14 +146,19 @@ class AtipayTransferService
      */
     public function getReceivedTransfers(int $userId)
     {
-        $transfers = AtipayTransfer::where('receiver_id', $userId)->latest()->get();
-
-        foreach ($transfers as $transfer) {
-            if ($transfer->status === 'pending' && $transfer->created_at <= now()->subMinutes(1)) {
-                $this->expire($transfer);
-                $transfer->refresh();
-            }
-        }
+        $transfers = AtipayTransfer::where('receiver_id', $userId)
+            ->with(['sender:id,username', 'receiver:id,username'])
+            ->latest()
+            ->get()
+            ->map(function ($transfer) {
+                return [
+                    'id' => $transfer->id,
+                    'sender' => $transfer->sender?->username,
+                    'receiver' => $transfer->receiver?->username,
+                    'amount' => $transfer->amount,
+                    'status' => $transfer->status,
+                ];
+            });
 
         return $transfers;
     }

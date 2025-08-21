@@ -63,10 +63,36 @@ class AuthUserService
         $partnerRoleId = Role::where('name', User::ROLE_PARTNER)->value('id');
         $adminRoleId   = Role::where('name', User::ROLE_ADMIN)->value('id');
 
-        return User::whereIn('role_id', [$partnerRoleId, $adminRoleId])
-            ->with('role')
+        $users = User::whereIn('role_id', [$partnerRoleId, $adminRoleId])
+            ->with(['role', 'referrer.role'])
             ->orderBy('username')
             ->get();
+
+        // Mapeo para la respuesta
+        return $users->map(function ($user) {
+            return [
+                'id'                => $user->id,
+                'username'          => $user->username,
+                'email'             => $user->email,
+                'role_id'           => $user->role_id,
+                'status'            => $user->status,
+                'atipay_money'      => $user->atipay_money,
+                'accumulated_points'=> $user->accumulated_points,
+                'reference_code'    => $user->reference_code,
+                'referred_by'       => $user->referred_by,
+                'registration_date' => $user->registration_date,
+                'registration_time' => $user->registration_time,
+                'referral_url'      => $user->referral_url,
+                'role' => [
+                    'id'   => $user->role->id,
+                    'name' => $user->role->name,
+                ],
+  
+                'referrer' => $user->referrer ? [
+                    'username' => $user->referrer->username,
+                ] : null,
+            ];
+        });
     }
 
     public function refreshToken()
