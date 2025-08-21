@@ -41,7 +41,12 @@ class AtipayTransferController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        return response()->json($this->transferService->getReceivedTransfers($user->id));
+        $transfers = $this->transferService->getReceivedTransfers($user->id);
+
+        return response()->json([
+            'message' => 'Transferencias recibidas obtenidas exitosamente',
+            'data'    => $transfers
+        ]);
     }
 
     /**

@@ -13,7 +13,6 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
-            $table->unsignedInteger('points_to_redeem')->default(0);
             $table->unsignedInteger('points_earned')->default(0);
             $table->enum('unit_type', ['unit', 'package', 'kilo', 'talla', 'education'])->nullable();
             $table->unsignedInteger('stock')->default(0);

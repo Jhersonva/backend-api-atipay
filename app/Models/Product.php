@@ -11,7 +11,6 @@ class Product extends Model
         'name',
         'description',
         'price',
-        'points_to_redeem',
         'points_earned',
         'unit_type',
         'stock',
@@ -25,7 +24,6 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'float',
-        'points_to_redeem' => 'float',
         'points_earned' => 'float',
         'stock' => 'integer'
     ];

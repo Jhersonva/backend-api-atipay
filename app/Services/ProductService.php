@@ -113,9 +113,9 @@ class ProductService
     /**
      * Procesar compra de producto por un usuario
      */
-    public function purchaseProduct(User $user, Product $product, int $quantity = 1, string $paymentMethod = 'atipay'): bool
+    public function purchaseProduct(User $user, Product $product, int $quantity = 1): bool
     {
-        return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
+        return DB::transaction(function () use ($user, $product, $quantity) {
             if ($product->status !== 'active') {
                 throw new \Exception('Este producto no está disponible para comprar.');
             }
@@ -124,89 +124,24 @@ class ProductService
                 throw new \Exception('La cantidad debe ser al menos 1.');
             }
 
-            if ($product->stock <= 0) {
-                throw new \Exception('Este producto está agotado y no se puede comprar.');
-            }
-            
-            if ($product->stock < $quantity) {
-                throw new \Exception('Stock insuficiente.');
-            }
-
-            $totalPrice = $product->price * $quantity;
-            $totalPoints = $product->points_earned * $quantity;
-
-            if ($paymentMethod === 'atipay') {
-                if ($user->atipay_money < $totalPrice) {
-                    throw new \Exception('Saldo Atipay insuficiente.');
-                }
-
-                // Se descuenta desde atipay_money
-                $user->atipay_money -= $totalPrice;
-                $user->accumulated_points += $totalPoints; 
-                $user->save();
-
-                $this->referralService->process($user, $totalPoints, 'purchase');
-            } elseif ($paymentMethod === 'points') {
-                if ($user->accumulated_points < $totalPrice) {
-                    throw new \Exception('Puntos insuficientes.');
-                }
-
-                $user->accumulated_points -= $totalPrice;
-                $user->save();
-
-            } else {
-                throw new \Exception('Método de pago inválido.');
-            }
-
-            $product->stock -= $quantity;
-
-            if ($product->stock === 0) {
-                $product->status = 'inactive';
-            }
-
-            $product->save();
-
-            return true;
-        });
-    }
-
-    public function requestPurchase(User $user, Product $product, int $quantity, string $paymentMethod): PurchaseRequest
-    {
-        return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
-            if ($product->status !== 'active') {
-                throw new \Exception('Este producto no está disponible para comprar.');
-            }
-
-            if ($quantity <= 0) {
-                throw new \Exception('La cantidad debe ser al menos 1.');
-            }
-
-            if ($product->stock <= 0) {
-                throw new \Exception('Este producto está agotado y no se puede comprar.');
-            }
-            
             if ($product->stock < $quantity) {
                 throw new \Exception('Stock insuficiente.');
             }
 
             $totalPrice  = $product->price * $quantity;
+            $totalPoints = $product->points_earned * $quantity;
 
-            // Descuento inmediato del dinero/puntos
-            if ($paymentMethod === 'atipay') {
-                if ($user->atipay_money < $totalPrice) {
-                    throw new \Exception('Saldo Atipay insuficiente.');
-                }
-                $user->atipay_money -= $totalPrice;
-                $user->save();
-            } elseif ($paymentMethod === 'points') {
-                if ($user->accumulated_points < $totalPrice) {
-                    throw new \Exception('Puntos insuficientes.');
-                }
-                $user->accumulated_points -= $totalPrice;
-                $user->save();
-            } else {
-                throw new \Exception('Método de pago inválido.');
+            if ($user->atipay_money < $totalPrice) {
+                throw new \Exception('Saldo Atipay insuficiente.');
             }
+
+            // Descuenta solo Atipay
+            $user->atipay_money -= $totalPrice;
+            $user->accumulated_points += $totalPoints;
+            $user->save();
+
+            // Procesar referidos
+            $this->referralService->process($user, $totalPoints, 'purchase');
 
             // Reducir stock
             $product->stock -= $quantity;
@@ -215,20 +150,56 @@ class ProductService
             }
             $product->save();
 
-            // Capturando fecha y hora
-            $now = Carbon::now();
-            $requestDate = $now->toDateString();          
-            $requestTime = $now->format('g:i A');     
+            return true;
+        });
+    }
 
-            // Crear solicitud pendiente
+    public function requestPurchase(User $user, Product $product, int $quantity, string $paymentMethod = 'atipay'): PurchaseRequest
+    {
+        return DB::transaction(function () use ($user, $product, $quantity, $paymentMethod) {
+            if ($product->status !== 'active') {
+                throw new \Exception('Este producto no está disponible para comprar.');
+            }
+
+            if ($quantity <= 0) {
+                throw new \Exception('La cantidad debe ser al menos 1.');
+            }
+
+            if ($product->stock < $quantity) {
+                throw new \Exception('Stock insuficiente.');
+            }
+
+            if ($paymentMethod !== 'atipay') {
+                throw new \Exception('Método de pago inválido. Solo se permite Atipay.');
+            }
+
+            $totalPrice = $product->price * $quantity;
+
+            if ($user->atipay_money < $totalPrice) {
+                throw new \Exception('Saldo Atipay insuficiente.');
+            }
+
+            // Solo se descuenta atipay_money
+            $user->atipay_money -= $totalPrice;
+            $user->save();
+
+            // Reducir stock
+            $product->stock -= $quantity;
+            if ($product->stock === 0) {
+                $product->status = 'inactive';
+            }
+            $product->save();
+
+            $now = Carbon::now();
+
             return PurchaseRequest::create([
                 'user_id'       => $user->id,
                 'product_id'    => $product->id,
                 'quantity'      => $quantity,
-                'payment_method'=> $paymentMethod,
+                'payment_method'=> 'atipay', 
                 'status'        => 'pending',
-                'request_date'  => $requestDate,
-                'request_time'  => $requestTime,
+                'request_date'  => $now->toDateString(),
+                'request_time'  => $now->format('g:i A'),
             ]);
         });
     }
