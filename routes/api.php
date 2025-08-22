@@ -24,16 +24,19 @@ Route::post('login', [AuthUserController::class, 'loginUser']);
 
 Route::middleware(IsUserAuth::class)->group(function () {
 
-    // Authenticated user
+    // Authenticated User
     Route::controller(AuthUserController::class)->group(function () {
         Route::post('refresh-token', 'refreshToken');
         Route::post('logout', 'logout');
         Route::get('user', 'getUser');
     });
 
+    // Edit Partner Profile (Auth)
+    Route::put('partner/profile', [AuthUserController::class, 'updateOwnProfile']);
+
     // Atipay Transfers (Auth)
-    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  //Transferencias enviadas
-    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']); //Transferencias recibidas
+    Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  
+    Route::get('atipay-transfers/received', [AtipayTransferController::class, 'received']); 
     Route::post('atipay-transfers', [AtipayTransferController::class, 'store']);
     Route::post('atipay-transfers/{id}/approve', [AtipayTransferController::class, 'approve']);
     Route::post('atipay-transfers/{id}/reject', [AtipayTransferController::class, 'reject']);
@@ -60,7 +63,7 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::get('/rewards', [RewardController::class, 'index']);
     Route::get('/rewards/{id}', [RewardController::class, 'show']);
 
-    // Canjear Recomenzas
+    // Canjear Recomenzas (Auth)
     Route::post('/rewards/{id}/redeem', [RewardController::class, 'redeem']);
 
     // Ver Red de afiliados propios (Auth)
@@ -82,7 +85,13 @@ Route::middleware(IsUserAuth::class)->group(function () {
     Route::middleware(IsAdmin::class)->group(function () {
 
         // Listar Users (Admin)
-            Route::get('users', [AuthUserController::class, 'index']);
+        Route::get('users', [AuthUserController::class, 'index']);
+
+        // Edit Admin Profile (Admin)
+        Route::put('admin/profile', [AuthUserController::class, 'updateOwnAdminProfile']);
+        
+        // Edit Partner Profile por (Admin)
+        Route::put('admin/profile/partners/{id}', [AuthUserController::class, 'updatePartner']);
 
         // Promotions (admin)
         Route::post('promotions', [PromotionController::class, 'store']);
