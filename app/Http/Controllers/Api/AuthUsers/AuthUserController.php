@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\AuthUsers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AuthUsers\UpdatePartnerByAdminRequest;
+use App\Http\Requests\AuthUsers\UpdateOwnProfileRequest;
+use App\Http\Requests\AuthUsers\UpdateAdminProfileRequest;
 use App\Http\Requests\AuthUsers\RegisterAuthRequest;
 use App\Http\Requests\AuthUsers\LoginAuthRequest;
 use App\Services\AuthUserService;
@@ -53,6 +56,68 @@ class AuthUserController extends Controller
         }
     }
 
+    public function updatePartner(UpdatePartnerByAdminRequest $request, int $id)
+    {
+        try {
+            $user = $this->authService->updatePartnerByAdmin($id, $request->validated());
+
+            return response()->json([
+                'message' => 'Usuario partner actualizado con éxito',
+                'data'    => [
+                    'id'       => $user->id,
+                    'username' => $user->username,
+                    'email'    => $user->email,
+                    'status'   => $user->status,
+                    'role'     => $user->role->name,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function updateOwnProfile(UpdateOwnProfileRequest $request)
+    {
+        try {
+            $user = $this->authService->updateOwnProfile($request->validated());
+
+            return response()->json([
+                'message' => 'Perfil actualizado con éxito',
+                'data'    => [
+                    'id'       => $user->id,
+                    'username' => $user->username,
+                    'email'    => $user->email,
+                    'status'   => $user->status,
+                    'role'     => $user->role->name,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    public function updateOwnAdminProfile(UpdateAdminProfileRequest $request)
+    {
+        try {
+            $user = $this->authService->updateOwnProfile($request->validated());
+
+            return response()->json([
+                'message' => 'Perfil de administrador actualizado con éxito',
+                'data'    => [
+                    'id'       => $user->id,
+                    'username' => $user->username,
+                    'email'    => $user->email,
+                    'status'   => $user->status,
+                    'role'     => $user->role->name,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
 
     public function refreshToken(): JsonResponse
     {

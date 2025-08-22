@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -93,6 +94,37 @@ class AuthUserService
                 ] : null,
             ];
         });
+    }
+
+    public function updatePartnerByAdmin(int $partnerId, array $data)
+    {
+        $partnerRoleId = Role::where('name', User::ROLE_PARTNER)->value('id');
+
+        $user = User::where('id', $partnerId)
+            ->where('role_id', $partnerRoleId)
+            ->firstOrFail();
+
+        $user->update($data);
+
+        return $user;
+    }
+
+    public function updateOwnProfile(array $data)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+
+        if (!$user) {
+            throw new \Exception('Usuario no autenticado.');
+        }
+
+        // Solo partners y admins pueden editar su perfil
+        if (!$user->hasRole(User::ROLE_PARTNER) && !$user->hasRole(User::ROLE_ADMIN)) {
+            throw new \Exception('No tienes permiso para editar tu perfil.');
+        }
+
+        $user->update($data);
+
+        return $user;
     }
 
     public function refreshToken()
