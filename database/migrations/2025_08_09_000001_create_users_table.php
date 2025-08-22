@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->string('password');
-            $table->enum('status', allowed: ['active', 'inactive'])->default('active');
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
             $table->decimal('atipay_money', 10, 2)->default(0); 
             $table->integer('accumulated_points')->default(0);
             $table->string('reference_code')->unique();
