@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('percentaje', 5, 2); 
             $table->decimal('atipay_price_promotion', 10, 2)->default(0);
+            $table->decimal('points_earned', 10, 2);
             $table->integer('duration_months');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

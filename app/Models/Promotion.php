@@ -13,6 +13,7 @@ class Promotion extends Model
         'name',
         'percentaje',
         'atipay_price_promotion',
+        'points_earned',
         'duration_months',
         'status',
     ];
@@ -25,5 +26,6 @@ class Promotion extends Model
     protected $casts = [
         'atipay_price_promotion' => 'float',
         'percentaje' => 'float',
+        'points_earned' => 'float'
     ];
 }

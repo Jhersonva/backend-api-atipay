@@ -67,16 +67,27 @@ class InvestmentService
         $totalDays = $startDate->diffInDays($endDate) + 1;
         $dailyEarning = $totalDays > 0 ? round($investment->total_earning / $totalDays, 2) : 0;
 
-        $investment->update([
-            'status'         => 'active',
-            'approved_at'    => $startDate,
-            'start_date'     => $startDate,
-            'end_date'       => $endDate,
-            'daily_earning'  => $dailyEarning,
-            'already_earned' => 0,
-            'last_earned_at' => $startDate, 
-            'admin_message'  => $adminMessage,
-        ]);
+        DB::transaction(function () use ($investment, $startDate, $endDate, $dailyEarning, $adminMessage) {
+            $investment->update([
+                'status'         => 'active',
+                'approved_at'    => $startDate,
+                'start_date'     => $startDate,
+                'end_date'       => $endDate,
+                'daily_earning'  => $dailyEarning,
+                'already_earned' => 0,
+                'last_earned_at' => $startDate, 
+                'admin_message'  => $adminMessage,
+            ]);
+
+            // Sumar puntos al socio
+            $promotion = $investment->promotion;
+            $user = $investment->user;
+
+            if ($promotion->points_earned > 0) {
+                $user->accumulated_points += $promotion->points_earned;
+                $user->save();
+            }
+        });
     }
 
     /**
