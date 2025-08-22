@@ -98,5 +98,63 @@ class ReferralCommissionService
 
         $monthly->points = ($monthly->points ?? 0) + $points;
         $monthly->save();
+
+        // Cambiar a activo si llego o paso los 100 puntos
+        if ($monthly->points >= self::REQUIRED_MONTHLY_POINTS && $user->status === 'inactive') {
+            $user->status = 'active';
+            $user->save();
+        }
+    }
+
+    /**
+     * Consultar puntos actuales del usuario y aplicar la lógica de reseteo mensual.
+     */
+    public function getCurrentMonthlyPoints(User $user): int
+    {
+        $now = now();
+        $month = $now->month;
+        $year  = $now->year;
+
+        // Buscar el registro del mes actual
+        $monthly = MonthlyUserPoint::where('user_id', $user->id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+
+        // Día 1 → resetear estado y puntos
+        if ($now->day === 1) {
+            if (!$monthly) {
+                // crear registro vacío
+                $monthly = MonthlyUserPoint::create([
+                    'user_id' => $user->id,
+                    'month'   => $month,
+                    'year'    => $year,
+                    'points'  => 0,
+                ]);
+            } else {
+                // resetear puntos
+                $monthly->points = 0;
+                $monthly->save();
+            }
+
+            // cambiar estado del usuario a inactivo
+            if ($user->status !== 'inactive') {
+                $user->status = 'inactive';
+                $user->save();
+            }
+        }
+
+        // Si no hay registro aún (ej. primer login del mes), devolver 0
+        if (!$monthly) {
+            return 0;
+        }
+
+        // Activar si pasó los 100 puntos
+        if ($monthly->points >= self::REQUIRED_MONTHLY_POINTS && $user->status === 'inactive') {
+            $user->status = 'active';
+            $user->save();
+        }
+
+        return $monthly->points;
     }
 }

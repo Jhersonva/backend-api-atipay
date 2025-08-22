@@ -33,6 +33,7 @@ class AuthUserService
             'email' => $data['email'],
             'password' => $data['password'],
             'role_id' => $partnerRoleId,
+            'status' => 'inactive',
             'reference_code' => Str::random(8),
             'referred_by' => $referrer->id,
             'registration_date' => now('America/Lima')->toDateString(),

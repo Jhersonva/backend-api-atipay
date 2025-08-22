@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Referrals\ReferralController;
 use App\Http\Controllers\Api\Commissions\CommissionSummaryController;
 use App\Http\Controllers\Api\Investments\InvestmentController;
 use App\Http\Controllers\Api\Investments\InvestmentWithdrawalController;
+use App\Http\Controllers\Api\Purchases\PurchaseRequestController;
 use App\Http\Controllers\Api\Reward\RewardController;
 
 
@@ -33,6 +34,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
     // Edit Partner Profile (Auth)
     Route::put('partner/profile', [AuthUserController::class, 'updateOwnProfile']);
+
+    // Ver si califique para ser un socio activo
+    Route::get('purchase-requests', [PurchaseRequestController::class, 'index']);
 
     // Atipay Transfers (Auth)
     Route::get('atipay-transfers/sent', [AtipayTransferController::class, 'sent']);  
