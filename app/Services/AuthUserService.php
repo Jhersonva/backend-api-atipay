@@ -60,6 +60,17 @@ class AuthUserService
         }
     }
 
+    public function findPartnerUsernameById(int $id): ?string
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            throw new \Exception("Usuario no encontrado.");
+        }
+
+        return $user->username;
+    }
+
     public function getUsersByRolePartnerOrAdmin()
     {
         $partnerRoleId = Role::where('name', User::ROLE_PARTNER)->value('id');
