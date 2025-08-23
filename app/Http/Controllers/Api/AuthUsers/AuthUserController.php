@@ -119,6 +119,21 @@ class AuthUserController extends Controller
         }
     }
 
+    public function getPartnerUsername(int $id)
+    {
+        try {
+            $username = $this->authService->findPartnerUsernameById($id);
+
+            return response()->json([
+                'id' => $id,
+                'username' => $username
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }
+
     public function refreshToken(): JsonResponse
     {
         try {

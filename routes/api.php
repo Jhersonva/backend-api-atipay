@@ -34,6 +34,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
     // Edit Partner Profile (Auth)
     Route::put('partner/profile', [AuthUserController::class, 'updateOwnProfile']);
+    
+    // Buscar socio con su id
+    Route::get('partners/{id}/username', [AuthUserController::class, 'getPartnerUsername']);
 
     // Ver si califique para ser un socio activo
     Route::get('purchase-requests', [PurchaseRequestController::class, 'index']);
