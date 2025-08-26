@@ -125,6 +125,7 @@ return [
 
     'default_admin_username' => env('DEFAULT_ADMIN_USERNAME', 'admin'),
     'default_admin_email' => env('DEFAULT_ADMIN_EMAIL', 'admin@atipay.com'),
+    'default_admin_phone_number' => env('DEFAULT_ADMIN_PHONE_NUMBER', '987654321'),
     'default_admin_password' => env('DEFAULT_ADMIN_PASSWORD', 'Admin123#'),
 
 ];

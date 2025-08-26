@@ -67,6 +67,7 @@ class AuthUserController extends Controller
                     'id'       => $user->id,
                     'username' => $user->username,
                     'email'    => $user->email,
+                    'phone_number' => $user->phone_number,
                     'status'   => $user->status,
                     'role'     => $user->role->name,
                 ]
@@ -88,6 +89,7 @@ class AuthUserController extends Controller
                     'id'       => $user->id,
                     'username' => $user->username,
                     'email'    => $user->email,
+                    'phone_number' => $user->phone_number,
                     'status'   => $user->status,
                     'role'     => $user->role->name,
                 ]
@@ -109,6 +111,7 @@ class AuthUserController extends Controller
                     'id'       => $user->id,
                     'username' => $user->username,
                     'email'    => $user->email,
+                    'phone_number' => $user->phone_number,
                     'status'   => $user->status,
                     'role'     => $user->role->name,
                 ]
@@ -119,6 +122,7 @@ class AuthUserController extends Controller
         }
     }
 
+    /*
     public function getPartnerUsername(int $id)
     {
         try {
@@ -127,6 +131,25 @@ class AuthUserController extends Controller
             return response()->json([
                 'id' => $id,
                 'username' => $username
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
+    }*/
+    public function findUser(string $identifier)
+    {
+        try {
+            $user = $this->authService->findUserByIdentifier($identifier);
+
+            return response()->json([
+                'id'            => $user->id,
+                'username'      => $user->username,
+                'email'         => $user->email,
+                'phone_number'  => $user->phone_number,
+                'reference_code'=> $user->reference_code,
+                'status'        => $user->status,
+                'role'          => $user->role->name,
             ], 200);
 
         } catch (\Exception $e) {
