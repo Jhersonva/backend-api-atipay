@@ -31,6 +31,7 @@ class AuthUserService
         return User::create([
             'username' => $data['username'],
             'email' => $data['email'],
+            'phone_number' => $data['phone_number'],
             'password' => $data['password'],
             'role_id' => $partnerRoleId,
             'status' => 'inactive',
@@ -60,6 +61,7 @@ class AuthUserService
         }
     }
 
+    /*
     public function findPartnerUsernameById(int $id): ?string
     {
         $user = User::find($id);
@@ -69,6 +71,19 @@ class AuthUserService
         }
 
         return $user->username;
+    }*/
+    public function findUserByIdentifier(string $identifier): ?User
+    {
+        $user = User::where('username', $identifier)
+            ->orWhere('phone_number', $identifier)
+            ->orWhere('reference_code', $identifier)
+            ->first();
+
+        if (!$user) {
+            throw new \Exception("Usuario no encontrado.");
+        }
+
+        return $user;
     }
 
     public function getUsersByRolePartnerOrAdmin()
@@ -87,6 +102,7 @@ class AuthUserService
                 'id'                => $user->id,
                 'username'          => $user->username,
                 'email'             => $user->email,
+                'phone_number'      => $user->email,
                 'role_id'           => $user->role_id,
                 'status'            => $user->status,
                 'atipay_money'      => $user->atipay_money,

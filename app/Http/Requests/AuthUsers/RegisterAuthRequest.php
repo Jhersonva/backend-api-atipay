@@ -16,6 +16,7 @@ class RegisterAuthRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'unique:users,username'],
             'email' => ['required', 'email', 'unique:users,email'],
+            'phone_number' => ['required', 'string', 'unique:users,phone_number'],
             'password' => ['required', 'string', 'min:6'],
             'reference_code' => ['required', 'string', 'exists:users,reference_code'],
         ];

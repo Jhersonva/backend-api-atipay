@@ -13,6 +13,7 @@ class AdminUserSeeder extends Seeder
     {
         $username = config('app.default_admin_username');
         $email = config('app.default_admin_email');
+        $phone_number = config('app.default_admin_phone_number');
         $password = config('app.default_admin_password');
 
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
@@ -22,6 +23,7 @@ class AdminUserSeeder extends Seeder
         ], [
             'username' => $username,
             'email' => $email,
+            'phone_number' => $phone_number,
             'password' => $password,
             'role_id' => $adminRole->id,
             'status' => 'active',
