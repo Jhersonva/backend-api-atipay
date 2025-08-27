@@ -69,7 +69,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
 
     // Reward (Auth)
     Route::get('/rewards', [RewardController::class, 'index']);
+    Route::get('/rewards/my-requests', [RewardController::class, 'myRequests']);
     Route::get('/rewards/{id}', [RewardController::class, 'show']);
+    Route::post('/rewards/{id}/request', [RewardController::class, 'requestRedeem']);
 
     // Canjear Recomenzas (Auth)
     Route::post('/rewards/{id}/redeem', [RewardController::class, 'redeem']);
@@ -130,6 +132,9 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::post('/rewards', [RewardController::class, 'store']); 
         Route::put('/rewards/{id}', [RewardController::class, 'update']);
         Route::delete('/rewards/{id}', [RewardController::class, 'destroy']);
+        Route::get('/reward-requests', [RewardController::class, 'requests']);
+        Route::post('/reward-requests/{id}/approve', [RewardController::class, 'approveRequest']);
+        Route::post('/reward-requests/{id}/reject', [RewardController::class, 'rejectRequest']);
 
         // Commissions Settings (admin)
         Route::post('commissions/settings', [CommissionSettingController::class, 'updateOrCreate']);

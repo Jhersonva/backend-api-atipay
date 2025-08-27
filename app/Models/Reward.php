@@ -14,12 +14,14 @@ class Reward extends Model
         'description',
         'reward_image',
         'redeem_points',
+        'stock'
     ];
 
     protected $hidden = ['created_at', 'updated_at', 'reward_image'];
 
     protected $casts = [
-        'redeem_points' => 'float'
+        'redeem_points' => 'float',
+        'stock' => 'integer',
     ];
 
     protected $appends = ['image_url'];

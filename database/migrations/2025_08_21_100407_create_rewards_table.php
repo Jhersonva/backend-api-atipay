@@ -14,6 +14,7 @@ return new class extends Migration
             $table->text('description')->nullable(); 
             $table->string('reward_image')->nullable(); 
             $table->decimal('redeem_points', 8, 2);
+            $table->unsignedInteger('stock')->default(0);
             $table->timestamps();
         });
     }

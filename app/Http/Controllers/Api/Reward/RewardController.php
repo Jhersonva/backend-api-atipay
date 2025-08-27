@@ -41,9 +41,75 @@ class RewardController extends Controller
                 'name' => $reward->name,
                 'description' => $reward->description,
                 'redeem_points' => $reward->redeem_points,
+                'stock' => $reward->stock,
                 'image_url' => $reward->image_url,
             ]
         ], 201);
+    }
+
+    public function requestRedeem(int $id): JsonResponse
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
+        $result = $this->rewardService->requestReward($id, $user->id);
+        $status = $result['success'] ? 201 : 400;
+
+        return response()->json($result, $status);
+    }
+    
+    // Admin: ver todas las solicitudes
+    public function requests(): JsonResponse
+    {
+        $requests = \App\Models\RewardRequest::with([
+            'user:id,username,email',
+            'reward:id,name,reward_image'
+        ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($requests);
+    }
+
+    public function myRequests(): JsonResponse
+    {
+        $user = auth('api')->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verificar que sea partner (role_id == 2, por ejemplo)
+        if ($user->role_id !== 2) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $requests = \App\Models\RewardRequest::with([
+            'reward:id,name,reward_image'
+        ])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($requests);
+    }
+
+    public function approveRequest(int $id): JsonResponse
+    {
+        $message = request('admin_message'); // 👈 cambia aquí
+        $result = $this->rewardService->approveRequest($id, $message);
+
+        return response()->json($result, $result['success'] ? 200 : 400);
+    }
+
+    public function rejectRequest(int $id): JsonResponse
+    {
+        $message = request('admin_message'); // 👈 cambia aquí
+        $result = $this->rewardService->rejectRequest($id, $message);
+
+        return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     /**
@@ -70,6 +136,7 @@ class RewardController extends Controller
                 'name' => $result['data']['reward']->name,
                 'description' => $result['data']['reward']->description,
                 'redeem_points' => $result['data']['reward']->redeem_points,
+                'stock' => $result['data']['reward']->stock,
                 'image_url' => $result['data']['reward']->image_url,
             ],
             'remaining_points' => $result['data']['remaining_points']
@@ -108,6 +175,7 @@ class RewardController extends Controller
                 'name' => $reward->name,
                 'description' => $reward->description,
                 'redeem_points' => $reward->redeem_points,
+                'stock' => $reward->stock,
                 'image_url' => $reward->image_url,
             ]
         ], 200);

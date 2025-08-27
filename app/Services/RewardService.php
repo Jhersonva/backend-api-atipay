@@ -45,6 +45,97 @@ class RewardService
         });
     }
 
+    public function requestReward(int $rewardId, int $userId): array
+    {
+        return DB::transaction(function () use ($rewardId, $userId) {
+            $user = User::findOrFail($userId);
+            $reward = Reward::findOrFail($rewardId);
+
+            if ($user->accumulated_points < $reward->redeem_points) {
+                return ['success' => false, 'message' => 'No tienes suficientes puntos'];
+            }
+
+            if ($reward->stock <= 0) {
+                return [
+                    'success' => false,
+                    'message' => 'La recompensa ya no está disponible, stock agotado',
+                    'error' => [
+                        'reward_id' => $reward->id,
+                        'name' => $reward->name,
+                        'stock' => $reward->stock,
+                        'image_url' => $reward->image_url,
+                    ]
+                ];
+            }
+
+            // Restar stock y puntos inmediatamente
+            $reward->stock -= 1;
+            $reward->save();
+
+            $user->accumulated_points -= $reward->redeem_points;
+            $user->save();
+
+            // Crear solicitud pendiente
+            $request = \App\Models\RewardRequest::create([
+                'user_id' => $user->id,
+                'reward_id' => $reward->id,
+                'status' => 'pending',
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Solicitud de canje enviada, pendiente de aprobación',
+                'data' => $request
+            ];
+        });
+    }
+
+    public function approveRequest(int $requestId, string $message = null): array
+    {
+        return DB::transaction(function () use ($requestId, $message) {
+            $request = \App\Models\RewardRequest::findOrFail($requestId);
+
+            if ($request->status !== 'pending') {
+                return ['success' => false, 'message' => 'La solicitud ya fue procesada'];
+            }
+
+            $request->update([
+                'status' => 'approved',
+                'admin_message' => $message,
+            ]);
+
+            return ['success' => true, 'message' => 'Solicitud aprobada'];
+        });
+    }
+
+    public function rejectRequest(int $requestId, string $message = null): array
+    {
+        return DB::transaction(function () use ($requestId, $message) {
+            $request = \App\Models\RewardRequest::findOrFail($requestId);
+
+            if ($request->status !== 'pending') {
+                return ['success' => false, 'message' => 'La solicitud ya fue procesada'];
+            }
+
+            // Reintegrar stock y puntos
+            $reward = $request->reward;
+            $user = $request->user;
+
+            $reward->stock += 1;
+            $reward->save();
+
+            $user->accumulated_points += $reward->redeem_points;
+            $user->save();
+
+            $request->update([
+                'status' => 'rejected',
+                'admin_message' => $message,
+            ]);
+
+            return ['success' => true, 'message' => 'Solicitud rechazada y recursos reintegrados'];
+        });
+    }
+
     public function redeemReward(int $rewardId, int $userId): array
     {
         return DB::transaction(function () use ($rewardId, $userId) {
@@ -58,11 +149,20 @@ class RewardService
                 ];
             }
 
+            if ($reward->stock <= 0) {
+                return [
+                    'success' => false,
+                    'message' => 'No hay stock disponible para esta recompensa'
+                ];
+            }
+
+            // Restar stock
+            $reward->stock -= 1;
+            $reward->save();
+
             // Restar puntos
             $user->accumulated_points -= $reward->redeem_points;
             $user->save();
-
-            // (Opcional) Podrías registrar en una tabla `reward_user` o `redemptions`
 
             return [
                 'success' => true,
