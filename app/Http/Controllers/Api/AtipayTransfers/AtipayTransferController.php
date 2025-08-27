@@ -62,7 +62,14 @@ class AtipayTransferController extends Controller
 
             return response()->json([
                 'message' => 'Transferencia creada correctamente',
-                'data'    => $transfer
+                'data'    => [
+                    'sender' => $transfer->sender->username,
+                    'receiver' => $transfer->receiver->username,
+                    'amount' => $transfer->amount,
+                    'status' => $transfer->status,
+                    'date'   => $transfer->created_at->format('Y-m-d'),
+                    'time'   => $transfer->created_at->format('H:i:s'),
+                ]
             ], 201);
 
         } catch (\Exception $e) {

@@ -28,13 +28,14 @@ class AtipayTransferService
             // Descontar al sender al crear la transferencia
             $sender->atipay_money -= $data['amount'];
             $sender->save();
-
-            return AtipayTransfer::create([
-                'sender_id'   => $data['sender_id'],
-                'receiver_id' => $data['receiver_id'],
-                'amount'      => $data['amount'],
-                'status'      => 'pending',
-            ]);
+                return AtipayTransfer::create([
+                    'sender_id'         => $data['sender_id'],
+                    'receiver_id'       => $data['receiver_id'],
+                    'amount'            => $data['amount'],
+                    'status'            => 'pending',
+                    'registration_date' => now('America/Lima')->toDateString(), 
+                    'registration_time' => now('America/Lima')->format('H:i:s'), 
+                ])->load(['sender:id,username', 'receiver:id,username']);
         });
     }
 
@@ -129,14 +130,23 @@ class AtipayTransferService
      */
     public function getSentTransfers(int $userId)
     {
-        $transfers = AtipayTransfer::where('sender_id', $userId)->latest()->get();
-
-        foreach ($transfers as $transfer) {
-            if ($transfer->status === 'pending' && $transfer->created_at <= now()->subMinutes(1)) {
-                $this->expire($transfer);
-                $transfer->refresh();
-            }
-        }
+        $transfers = AtipayTransfer::where('sender_id', $userId)
+            ->with(['sender:id,username', 'receiver:id,username']) 
+            ->latest()
+            ->get()
+            ->map(function ($transfer) {
+                return [
+                    'id' => $transfer->id,
+                    'sender_id' => $transfer->sender_id,
+                    'sender_username' => $transfer->sender?->username,
+                    'receiver_id' => $transfer->receiver_id,
+                    'receiver_username' => $transfer->receiver?->username,
+                    'amount' => $transfer->amount,
+                    'status' => $transfer->status,
+                    'registration_date' => $transfer->registration_date,
+                    'registration_time' => $transfer->registration_time,
+                ];
+            });
 
         return $transfers;
     }
@@ -170,7 +180,7 @@ class AtipayTransferService
     {
         $transfer = AtipayTransfer::find($id);
 
-        if ($transfer && $transfer->status === 'pending' && $transfer->created_at <= now()->subMinutes(1)) {
+        if ($transfer && $transfer->status === 'pending' && $transfer->created_at <= now()->subMinutes(30)) {
             $this->expire($transfer);
             $transfer->refresh();
         }

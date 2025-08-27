@@ -14,6 +14,8 @@ return new class extends Migration
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'approved', 'rejected', 'not_evaluated'])->default('pending');
+            $table->date('registration_date')->nullable(); 
+            $table->time('registration_time')->nullable();
             $table->timestamps();
         });
     }
