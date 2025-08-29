@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\Promotions\PromotionController;
 use App\Http\Controllers\Api\AuthUsers\AuthUserController;
 use App\Http\Controllers\Api\AtipayTransfers\AtipayTransferController;
 use App\Http\Controllers\Api\Withdrawals\WithdrawalController;
-use App\Http\Controllers\Api\AtipayRecharges\AtipayRechargeController;
 use App\Http\Controllers\Api\Products\ProductController;
 use App\Http\Controllers\Api\Commissions\CommissionSettingController;
 use App\Http\Controllers\Api\Referrals\ReferralController;
@@ -13,6 +12,9 @@ use App\Http\Controllers\Api\Commissions\CommissionSummaryController;
 use App\Http\Controllers\Api\Investments\InvestmentController;
 use App\Http\Controllers\Api\Investments\InvestmentWithdrawalController;
 use App\Http\Controllers\Api\Purchases\PurchaseRequestController;
+use App\Http\Controllers\Api\AtipayRecharges\PaymentMethodController;
+use App\Http\Controllers\Api\AtipayRecharges\UserPaymentMethodController;
+use App\Http\Controllers\Api\AtipayRecharges\AtipayRechargeController;
 use App\Http\Controllers\Api\Reward\RewardController;
 
 
@@ -61,6 +63,12 @@ Route::middleware(IsUserAuth::class)->group(function () {
     // Atipay Recharges (Auth)
     Route::post('atipay-recharges', [AtipayRechargeController::class, 'store']);
     Route::get('atipay-recharges/my', [AtipayRechargeController::class, 'myRecharges']);
+
+    // Ver todos los métodos de pago disponibles (Auth)
+    Route::get('payment-methods', [PaymentMethodController::class, 'index']);
+
+    // Ver métodos de pago configurados por el usuario autenticado (Auth)
+    Route::get('user/payment-methods', [UserPaymentMethodController::class, 'index']);
 
     // Products (Auth)
     Route::get('products', [ProductController::class, 'index']);
@@ -119,6 +127,18 @@ Route::middleware(IsUserAuth::class)->group(function () {
         Route::get('atipay-recharges/{id}', [AtipayRechargeController::class, 'show']);
         Route::post('atipay-recharges/{id}/approve', [AtipayRechargeController::class, 'approve']);
         Route::post('atipay-recharges/{id}/reject', [AtipayRechargeController::class, 'reject']);
+
+        // Métodos de pago disponibles (admin)
+        //Route::get('payment-methods', [PaymentMethodController::class, 'index']);
+        Route::post('payment-methods', [PaymentMethodController::class, 'store']);
+        Route::put('payment-methods/{id}', [PaymentMethodController::class, 'update']);
+        Route::delete('payment-methods/{id}', [PaymentMethodController::class, 'destroy']);
+
+        // Métodos de pago del usuario (admin)
+        //Route::get('user/payment-methods', [UserPaymentMethodController::class, 'index']);
+        Route::post('user/payment-methods', [UserPaymentMethodController::class, 'store']);
+        Route::put('user/payment-methods/{id}', [UserPaymentMethodController::class, 'update']);
+        Route::delete('user/payment-methods/{id}', [UserPaymentMethodController::class, 'destroy']);
     
         // Products (admin)
         Route::post('products', [ProductController::class, 'store']);

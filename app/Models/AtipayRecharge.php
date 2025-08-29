@@ -15,7 +15,7 @@ class AtipayRecharge extends Model
         'user_id',
         'full_names',
         'amount',
-        'method',
+        'user_payment_method_id',
         'proof_image_path',
         'status',
         'approved_by',
@@ -47,6 +47,11 @@ class AtipayRecharge extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+    
+    public function userPaymentMethod()
+    {
+        return $this->belongsTo(UserPaymentMethod::class);
     }
 
     public function getProofImageUrlAttribute()
