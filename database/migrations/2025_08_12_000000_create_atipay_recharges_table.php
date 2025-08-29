@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('full_names');
             $table->decimal('amount', 10, 2);
-            $table->enum('method', ['yape', 'plin', 'transferencia_bancaria', 'transferencia_electronica']);
+            $table->foreignId('user_payment_method_id')->constrained('user_payment_methods')->onDelete('cascade');
             $table->string('proof_image_path');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null'); 

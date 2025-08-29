@@ -16,8 +16,17 @@ class StoreAtipayRechargeRequest extends FormRequest
         return [
             'full_names' => 'required|string|max:255',
             'amount' => 'required|numeric|min:1',
-            'method' => 'required|in:yape,plin,transferencia_bancaria,transferencia_electronica',
+            'user_payment_method_id' => 'required|exists:user_payment_methods,id',
             'proof_image' => 'required|image|max:2048',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'user_payment_method_id.required' => 'Debes seleccionar un método de pago configurado.',
+            'user_payment_method_id.exists' => 'El método de pago seleccionado no existe.',
+        ];
+    }
 }
+
